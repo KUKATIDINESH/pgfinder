@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}HOME{% endblock %}
+
+{% block extra_css %}{% endblock extra_css %}
+{% block content %}
+
+
+
+<div class="container mt-5 mb-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">PG Information Form</h3>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {% if errors %}
+        <ul class="text-danger">
+            {% for error in errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <h5 class="mb-4">PG Information</h5>
+    {% for field in form %}
+        <div class="mb-3">
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+                <div class="text-danger small">
+                    {{ field.errors }}
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <h5 class="mt-4 mb-3">Upload Your PG Images</h5>
+    {% for field in image_form %}
+        <div class="mb-3">
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+                <div class="text-danger small">
+                    {{ field.errors }}
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <button type="submit" class="btn btn-success">Submit</button>
+</form>
+
+        </div>
+    </div>
+</div>
+{% endblock content %}
+{% block extra_js %}
+<script>
+   let two_sharing=document.getElementsByClassName('two_sharing')
+   let vacancy2=document.getElementsByClassName('vacancy2')
+   let fees2=document.getElementsByClassName('fees2')
+
+   let three_sharing=document.getElementsByClassName('three_sharing')
+    let vacancy3=document.getElementsByClassName('vacancy3')
+   let fees3=document.getElementsByClassName('fees3')
+
+   let four_sharing=document.getElementsByClassName('four_sharing')
+   let vacancy4=document.getElementsByClassName('vacancy4')
+   let fees4=document.getElementsByClassName('fees4')
+
+
+   let other_sharing=document.getElementsByClassName('other_sharing')
+   let vacancy=document.getElementsByClassName('vacancy')
+   let fees=document.getElementsByClassName('fees')
+   
+   two_sharing.addEventListener("change",()=>{
+    if (two_sharing.checked){
+        vacancy2.disabled=false;
+        vacancy2.required=true;
+
+        fees2.disabled=false;
+        fees2.required=true;
+    }else{
+        vacancy2.disabled=true;
+        vacancy2.required=false;
+
+        fees2.disabled=false;
+        fees2.required=true;
+    }
+   })
+
+   
+</script>
+ {% endblock extra_js %}
+
+
+
+

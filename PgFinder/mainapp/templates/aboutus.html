@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block title %}About{% endblock %}
+
+
+<!-- <link rel="stylesheet" href="{% static 'css/base.css' %}"> -->
+{% block extra_css %}
+<style>
+    .about-section {
+      padding: 50px 20px;
+      text-align: center;
+      background: #fff;
+      margin: 50px 0;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .about-section h2 {
+      font-size: 2.5rem;
+      color: #0077cc;
+    }
+
+    .about-section p {
+      font-size: 1.2rem;
+      color: #333;
+      margin: 20px auto;
+      max-width: 800px;
+    }
+
+   .about-section img{
+      width:70%;
+      border-radius: 50%;
+    }
+</style>
+
+{% endblock extra_css %}
+
+
+{% block content %}
+<section class="about-section">
+    <h2>About Us</h2>
+    <p>
+    Welcome to  <mark>PG Kamra</mark>  Bangalore – the easiest way to find your next PG room in Bangalore!
+    </p>
+    <p>
+      Created by a local developer (Dinesh, that’s me!), this platform was designed with one simple goal in mind: to make finding a room in Bangalore as smooth as possible. Whether you’re a student, a working professional, or just moving to the city, PG kamra Bangalore helps you discover rooms that fit your budget, preferences, and location.
+    <p>
+      Built using Django, the website is simple, fast, and reliable, helping you browse room listings, filter by your needs, and connect with landlords or roommates in very short time.
+    </p>
+    <p>
+      I created this project because I know how stressful it can be to find a good place in a city as big as Bangalore. So, I thought: why not make it easier?
+    </p>
+    <p>
+      Hope you find the perfect room – and if you’ve got any feedback or suggestions, I’d love to hear from you!
+    </p>
+    <img src="{% static 'images/myphoto.jpg' %}" alt="my photo">
+  </section>
+{% endblock %}

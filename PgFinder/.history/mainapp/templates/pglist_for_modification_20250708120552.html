@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}HOME{% endblock %}
+
+{% block extra_css %}
+<style>
+
+.pgs{
+    border: 10px solid red;
+    
+}
+</style>
+
+{% endblock extra_css %}
+
+
+{% block content %}
+<h1>your PGS:</h1>
+<div class="pgs">
+{% for pg in pgs %}
+    
+   
+ <p><b>PGname</b>:{{pg.pgname}}</p>
+    <p><b>PG owner name </b>:{{pg.ownername}}</p><br>
+    
+{% endfor %}
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+
+ {% endblock extra_js %}

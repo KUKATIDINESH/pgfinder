@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}HOME{% endblock %}
+
+{% block extra_css %}
+
+{% endblock extra_css %}
+
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Modify PG Information</h2>
+    
+    <form method="post" class="card p-4 shadow">
+        {% csrf_token %}
+        
+        {% for pg in pgs %}
+            <div class="mb-3">
+                <label for="" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                    <div class="text-danger small">
+                        {{ field.errors|striptags }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="{% url 'some-back-url' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+
+ {% endblock extra_js %}

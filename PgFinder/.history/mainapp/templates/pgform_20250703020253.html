@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}HOME{% endblock %}
+
+{% block extra_css %}{% endblock extra_css %}
+{% block content %}
+
+
+
+<div class="container mt-5 mb-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">PG Information Form</h3>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {% if errors %}
+        <ul class="text-danger">
+            {% for error in errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <h5 class="mb-4">PG Information</h5>
+    {% for field in form %}
+        <div class="mb-3">
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+                <div class="text-danger small">
+                    {{ field.errors }}
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <h5 class="mt-4 mb-3">Upload Your PG Images</h5>
+    {% for field in image_form %}
+        <div class="mb-3">
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+                <div class="text-danger small">
+                    {{ field.errors }}
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <button type="submit" class="btn btn-success">Submit</button>
+</form>
+
+        </div>
+    </div>
+</div>
+{% endblock content %}
+{% block extra_js %}
+
+
+
+ {% endblock extra_js %}
+
+
+
+

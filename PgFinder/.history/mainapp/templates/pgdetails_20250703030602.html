@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{}
+{% block content %}
+<div class="container" >
+        <h2>{{ pg.pgname }}</h2>
+        <p><strong>Owner:</strong> {{ pg.ownername }}</p>
+        <p><strong>Email:</strong> {{ pg.mail }}</p>
+        <p><strong>Area:</strong> {{ pg.area }}</p>
+        <p><strong>Address:</strong> {{ pg.address }}</p>
+
+        <h4>Facilities</h4>
+        <ul>
+            {% if pg.washing_machine %}<li>Washing Machine</li>{% endif %}
+            {% if pg.water_heater %}<li>Water Heater</li>{% endif %}
+            {% if pg.ac %}<li>AC</li>{% endif %}
+        </ul>
+
+        <h4>Languages Known</h4>
+        <p>{{ pg.languageknown1 }}, {{ pg.languageknown2 }}, {{ pg.languageknown3 }}</p>
+
+        <h4>Sharing Info</h4>
+        <ul>
+            {% if pg.two_sharing %}<li>2 Sharing: {{ pg.vacancy2 }} seats @ ₹{{ pg.fees2 }}</li>{% endif %}
+            {% if pg.three_sharing %}<li>3 Sharing: {{ pg.vacancy3 }} seats @ ₹{{ pg.fees3 }}</li>{% endif %}
+            {% if pg.four_sharing %}<li>4 Sharing: {{ pg.vacancy4 }} seats @ ₹{{ pg.fees4 }}</li>{% endif %}
+            {% if pg.other_sharing %}<li>Other: {{ pg.vacancy }} seats @ ₹{{ pg.fees }}</li>{% endif %}
+        </ul>
+
+        <h4>Contact</h4>
+        <p>Phone: {{ pg.phno }}</p>
+
+        <h4>PG Images</h4>
+        <div class="row">
+            {% for img in pg.images.all %}
+                <div class="col-md-3 mb-3">
+                    <img src="{{ img.image.url }}" class="img-fluid rounded border" alt="PG Image">
+                </div>
+            {% empty %}
+                <p>No images uploaded for this PG.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock content %}

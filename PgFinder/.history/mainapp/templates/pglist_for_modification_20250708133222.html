@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}HOME{% endblock %}
+
+{% block extra_css %}
+<style>
+
+.pgs{
+    background-color: aliceblue;
+    /* border: 10px solid red; */
+    display: flex;
+    justify-content: left;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+.pgs div{
+    background-color: white;
+}
+a{
+    text-decoration: none;
+    color: white;
+}
+button{
+    border-radius: 10px 10px 10px 10px;
+}
+</style>
+
+{% endblock extra_css %}
+
+
+{% block content %}
+<h1>your PGS:</h1>
+<div class="pgs">
+{% for pg in pgs %}
+    
+ <div style="width: auto; padding: 0.6rem; border: 1px solid grey;margin-bottom: 5px; border-radius: 10px 10px 10px 10px;">
+    <p> <b>PGname</b>:{{pg.pgname}} </p>
+        <button id="modify" class="btn btn-primary"><a href="{% url 'modifypg' pg.id %}" >modify{{pg.id}}</a></button>
+        <button id="delete" class="btn btn-danger"><a href="{% url 'pg_delete' pg %}">delete</a></button>
+</div>
+    <!-- <p><b>PG owner name </b>:{{pg.ownername}}</p><br> -->
+    
+{% endfor %}
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+
+ {% endblock extra_js %}

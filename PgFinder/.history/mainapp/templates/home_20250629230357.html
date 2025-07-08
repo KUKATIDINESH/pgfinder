@@ -1,0 +1,153 @@
+
+  {% extends 'base.html' %}
+  {% block title %}HOME{% endblock %}
+
+
+  {% block content %}
+
+  <main class="py-5 bg-light">
+  <div class="container">
+    <div class="row justify-content-center mb-4">
+      <div class="col-md-8">
+        <h2 class="text-center mb-4">Find a Place</h2>
+        
+        <div class="mb-3">
+          <input type="text" class="form-control" id="searchInput" placeholder="Search for Place...">
+          <div id="suggestionBox" class="suggestions mt-1"></div>
+        </div>
+
+        <div class="mb-3">
+          <select class="form-select" id="pgrent" name="pgrent">
+            <option value="">-- Select PG Rent Type --</option>
+            <option value="50000-100000">50000 - 100000</option>
+            <option value="20000-50000">20000 - 50000</option>
+            <option value="15000-20000">15000 - 20000</option>
+            <option value="10000-15000">10000 - 15000</option>
+            <option value="9000-10000">9000 - 10000</option>
+            <option value="8000-9000">8000 - 9000</option>
+            <option value="7000-8000">7000 - 8000</option>
+            <option value="6000-7000">6000 - 7000</option>
+            <option value="5000-6000">5000 - 6000</option>
+            <option value="4000-5000">4000 - 5000</option>
+            <option value="3000-4000">3000 - 4000</option>
+            <option value="2000-3000">2000 - 3000</option>
+            <option value="1500-2000">1500 - 2000</option>
+          </select>
+        </div>
+
+        <div class="text-center">
+          <button class="btn btn-primary" onclick="search()" id="searchbutton">Submit</button>
+        </div>
+
+        <p id="selectedState" class="mt-3 text-center text-muted"></p>
+      </div>
+    </div>
+
+    <hr>
+
+    <section class="py-5">
+      <h2 class="text-center mb-4">What We Offer</h2>
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">Modern Design</h5>
+              <p class="card-text">Beautiful, responsive layouts that look great on any device.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">Secure Login</h5>
+              <p class="card-text">User authentication with security in mind — safe & reliable.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">Fast Performance</h5>
+              <p class="card-text">Optimized pages that load quickly and perform seamlessly.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+ {% endblock content %}
+
+
+ {% block extra_js %}
+
+  <script>
+function search() {
+  let selectedValue = document.getElementById('searchInput').value;
+  let rentstr = document.getElementById("pgrent").value;
+  let errormsg = document.getElementById("selectedState");
+
+  if (selectedValue && rentstr) {
+    if (suggestions.includes(selectedValue)) {
+      window.location.href = `/main/display_all_pg_details/${selectedValue}/${rentstr}/`;
+    } else {
+      errormsg.innerText = "Please enter a correct area name or select from suggestions while typing.";
+      errormsg.style.color = "red";
+      document.getElementById("searchInput").value = "";
+    }
+  } else if (selectedValue) {
+    rentstr = '0';
+    if (suggestions.includes(selectedValue)) {
+      window.location.href =`/main/display_all_pg_details/${selectedValue}/${rentstr}/`;
+    } else {
+      errormsg.innerText = "Please enter a correct area name or select from suggestions while typing.";
+      errormsg.style.color = "red";
+      document.getElementById("searchInput").value = "";
+    }
+  } else if (rentstr) {
+    selectedValue = "area";
+    window.location.href = `/main/display_all_pg_details/${selectedValue}/${rentstr}/`;
+    errormsg.innerText = "Please enter a place or select a rent range.";
+    errormsg.style.color = "red";
+    return;
+  }
+}
+
+let suggestions = ["Anekal", "Anjanapura", "Arekere", "Attibele", "Balepet", "Banashankari","Banaswadi", "Basavanagudi", "Basaveshwaranagar", "Begur", "Bellandur","Bommanahalli", "Bommasandra", "BTM Layout", "Chandapura", "Chickpet","Chikkabanavara", "Cottonpet", "CV Raman Nagar", "Domlur", "Electronic City","Fraser Town (Pulakeshi Nagar)", "Girinagar", "Gottigere", "Hebbal","HBR Layout", "Hesaraghatta", "Hoodi", "Horamavu", "HSR Layout", "Hulimavu", "Indiranagar", "J. P. Nagar", "Jalahalli", "Jayanagar", "Jigani", "Kalyan Nagar", "Kamakshipalya", "Kammanahalli", "Kengeri", "Koramangala", "Kothnur", "Krishnarajapuram", "Kumaraswamy Layout", "Lingarajapuram","Madiwala", "Mahalakshmi Layout", "Mahadevapura", "Malleswaram","Marathahalli", "Mathikere", "Nagarbhavi", "Nandini Layout", "Nayandahalli","Nelamangala", "Padmanabhanagar", "Peenya","Pete Area (Chickpet, Balepet, Cottonpet, Sultanpet)", "R. T. Nagar","Rajarajeshwari Nagar", "Rajajinagar", "Ramamurthy Nagar", "Sadashivanagar","Sarjapura", "Seshadripuram", "Shivajinagar", "Sultanpet", "Thavarekere","Ulsoor (Halasuru)", "Uttarahalli", "Varthur", "Vasanth Nagar","Vidyaranyapura", "Vijayanagar", "Whitefield", "Yelahanka", "Yeshwanthpur"];
+
+const searchBox = document.getElementById("searchInput");
+const suggestionBox = document.getElementById("suggestionBox");
+
+searchBox.addEventListener("input", function () {
+  const input = this.value.toLowerCase();
+  suggestionBox.innerHTML = "";
+  document.getElementById("selectedState").innerText = "";
+
+  if (input) {
+    const filtered = suggestions.filter(item => item.toLowerCase().includes(input));
+    filtered.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "suggestionslist p-2 bg-white border mb-1 cursor-pointer";
+      div.textContent = item;
+      div.style.cursor = "pointer";
+      div.addEventListener("click", () => {
+        searchBox.value = item;
+        suggestionBox.innerHTML = "";
+      });
+      suggestionBox.appendChild(div);
+    });
+  }
+});
+
+document.addEventListener("click", (e) => {
+  if (!e.target.closest("#searchInput")) {
+    suggestionBox.innerHTML = "";
+  }
+});
+
+document.getElementById("pgrent").addEventListener("change", () => {
+  document.getElementById("selectedState").innerText = "";
+});
+</script>
+
+ {% endblock extra_js %}

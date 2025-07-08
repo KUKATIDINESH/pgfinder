@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}HOME{% endblock %}
+
+{% block extra_css %}
+
+{% endblock extra_css %}
+
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Modify PG Information</h2>
+    
+    
+        {% for pg in pgs %}
+            <div class="mb-3">
+               <label for=""></label>
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="{% url 'some-back-url' %}" class="btn btn-secondary">Cancel</a>
+    
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+
+ {% endblock extra_js %}
