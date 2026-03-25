@@ -1,48 +1,232 @@
 {% extends 'base.html' %}
-{% block title %}HOME{% endblock %}
+{% block title %}My PG Listings{% endblock %}
 
 {% block extra_css %}
 <style>
+  .mylist-wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 3.5rem 1.5rem;
+  }
 
-.pgs{
-    background-color: aliceblue;
-    /* border: 10px solid red; */
+  .mylist-header {
+    margin-bottom: 2rem;
+  }
+
+  .mylist-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.7rem, 4vw, 2.5rem);
+    font-weight: 800;
+    letter-spacing: -.04em;
+  }
+
+  .mylist-header h1 span { color: var(--accent); }
+  .mylist-header p { color: var(--muted); margin-top: .4rem; font-size: .95rem; }
+
+  /* empty state */
+  .empty-state {
+    text-align: center;
+    padding: 5rem 2rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+  }
+
+  .empty-ico { font-size: 3.5rem; color: var(--border); margin-bottom: 1.5rem; }
+  .empty-state h3 { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; margin-bottom: .5rem; }
+  .empty-state p { color: var(--muted); margin-bottom: 1.5rem; }
+
+  /* PG list */
+  .pg-list { display: flex; flex-direction: column; gap: 1rem; }
+
+  .pg-list-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
     display: flex;
-    justify-content: left;
-    gap: 20px;
+    align-items: center;
+    gap: 1rem;
+    transition: all .2s;
     flex-wrap: wrap;
-}
-.pgs div{
-    background-color: white;
-}
-a{
-    text-decoration: none;
-    color: white;
-}
-button{
-    border-radius: 10px 10px 10px 10px;
-}
-</style>
+  }
 
+  .pg-list-item:hover { border-color: var(--accent); box-shadow: 0 8px 24px rgba(0,0,0,.07); }
+
+  .pg-list-item-icon {
+    width: 46px; height: 46px;
+    border-radius: 12px;
+    background: rgba(255,78,26,.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .pg-list-item-info { flex: 1; min-width: 160px; }
+
+  .pg-list-item-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: -.02em;
+  }
+
+  .pg-list-item-area { font-size: .82rem; color: var(--muted); margin-top: .2rem; }
+
+  .pg-list-actions {
+    display: flex;
+    gap: .6rem;
+    flex-shrink: 0;
+  }
+
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .55rem 1.1rem;
+    border-radius: 50px;
+    font-size: .82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all .2s;
+    border: 2px solid transparent;
+  }
+
+  .action-btn.edit {
+    background: rgba(124,58,237,.08);
+    color: var(--accent2);
+    border-color: rgba(124,58,237,.2);
+  }
+
+  .action-btn.edit:hover {
+    background: var(--accent2);
+    color: #fff;
+    border-color: var(--accent2);
+  }
+
+  .action-btn.del {
+    background: rgba(220,38,38,.06);
+    color: #dc2626;
+    border-color: rgba(220,38,38,.15);
+  }
+
+  .action-btn.del:hover {
+    background: #dc2626;
+    color: #fff;
+    border-color: #dc2626;
+  }
+
+  .action-btn.view {
+    background: var(--paper);
+    color: var(--ink);
+    border-color: var(--border);
+  }
+
+  .action-btn.view:hover {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+
+  /* delete confirm modal */
+  .del-modal {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 9000;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .del-modal.open { display: flex; }
+
+  .del-modal-box {
+    background: #fff;
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+  }
+
+  .del-modal-box .del-ico { font-size: 2.5rem; color: #dc2626; margin-bottom: 1rem; }
+  .del-modal-box h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; margin-bottom: .5rem; }
+  .del-modal-box p { color: var(--muted); font-size: .9rem; margin-bottom: 1.5rem; }
+  .del-modal-actions { display: flex; gap: .75rem; justify-content: center; }
+</style>
 {% endblock extra_css %}
 
-
 {% block content %}
-<h1>your PGS:</h1>
-<div class="pgs">
-{% for pg in pgs %}
-    
- <div style="width: auto; padding: 0.6rem; border: 1px solid grey;margin-bottom: 5px; border-radius: 10px 10px 10px 10px;">
-    <p> <b>PGname</b>:{{pg.pgname}} </p>
-        <button id="modify" class="btn btn-primary"><a href="{% url 'modifypg' pg.id %}" >modify</a></button>
-        <button id="delete" class="btn btn-danger"><a href="{% url 'pg_delete' pg.id %}">delete</a></button>
+<div class="mylist-wrap">
+  <div class="mylist-header">
+    <h1>Your <span>PG</span> Listings</h1>
+    <p>Manage all your listed accommodations from one place.</p>
+  </div>
+
+  {% if pgs %}
+  <div class="pg-list">
+    {% for pg in pgs %}
+    <div class="pg-list-item">
+      <div class="pg-list-item-icon"><i class="fas fa-building"></i></div>
+      <div class="pg-list-item-info">
+        <div class="pg-list-item-name">{{ pg.pgname }}</div>
+        <div class="pg-list-item-area"><i class="fas fa-location-dot fa-xs" style="color:var(--accent)"></i> {{ pg.area }}</div>
+      </div>
+      <div class="pg-list-actions">
+        <a href="{% url 'pgdetails' pg.id %}" class="action-btn view"><i class="fas fa-eye fa-xs"></i>View</a>
+        <a href="{% url 'modifypg' pg.id %}" class="action-btn edit"><i class="fas fa-pen fa-xs"></i>Edit</a>
+        <button class="action-btn del" onclick="confirmDelete('{% url 'pg_delete' pg.id %}', '{{ pg.pgname }}')">
+          <i class="fas fa-trash fa-xs"></i>Delete
+        </button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-ico"><i class="fas fa-house-circle-exclamation"></i></div>
+    <h3>No listings yet</h3>
+    <p>You haven't added any PG yet. List your first one in minutes.</p>
+    <a href="{% url 'pgregister' %}" class="btn-pill primary"><i class="fas fa-plus"></i>List a PG</a>
+  </div>
+  {% endif %}
 </div>
-    <!-- <p><b>PG owner name </b>:{{pg.ownername}}</p><br> -->
-    
-{% endfor %}
+
+<!-- delete confirm modal -->
+<div class="del-modal" id="delModal">
+  <div class="del-modal-box">
+    <div class="del-ico"><i class="fas fa-triangle-exclamation"></i></div>
+    <h3>Delete listing?</h3>
+    <p id="delMsg">This will permanently remove the PG from the platform.</p>
+    <div class="del-modal-actions">
+      <button class="btn-pill ghost" onclick="closeModal()">Cancel</button>
+      <a id="delConfirmLink" href="#" class="btn-pill primary" style="background:#dc2626">Yes, delete</a>
+    </div>
+  </div>
 </div>
+
 {% endblock content %}
 
 {% block extra_js %}
+<script>
+function confirmDelete(url, name) {
+  document.getElementById('delMsg').textContent = `"${name}" will be permanently removed.`;
+  document.getElementById('delConfirmLink').href = url;
+  document.getElementById('delModal').classList.add('open');
+}
 
- {% endblock extra_js %}
+function closeModal() {
+  document.getElementById('delModal').classList.remove('open');
+}
+
+document.getElementById('delModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+{% endblock extra_js %}

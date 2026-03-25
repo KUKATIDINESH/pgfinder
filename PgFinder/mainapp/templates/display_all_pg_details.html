@@ -1,32 +1,234 @@
 {% extends 'base.html' %}
+{% block title %}Browse PGs{% endblock %}
+
+{% block extra_css %}
+<style>
+  .results-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+  }
+
+  .results-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .results-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: -.03em;
+  }
+
+  .results-header h1 span { color: var(--accent); }
+
+  .count-badge {
+    font-size: .8rem;
+    font-weight: 600;
+    background: rgba(255,78,26,.1);
+    color: var(--accent);
+    padding: .3rem .9rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255,78,26,.2);
+  }
+
+  /* grid */
+  .pg-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  /* card */
+  .pg-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    transition: all .25s;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pg-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 50px rgba(0,0,0,.1);
+    border-color: transparent;
+  }
+
+  .pg-card-img {
+    position: relative;
+    height: 190px;
+    overflow: hidden;
+    background: #f0ece4;
+  }
+
+  .pg-card-img img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform .4s;
+  }
+
+  .pg-card:hover .pg-card-img img { transform: scale(1.05); }
+
+  .pg-card-img .no-img {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--muted);
+    font-size: 2.5rem;
+  }
+
+  .sharing-tag {
+    position: absolute;
+    top: .75rem; left: .75rem;
+    background: var(--ink);
+    color: #fff;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    padding: .3rem .75rem;
+    border-radius: 20px;
+  }
+
+  .pg-card-body { padding: 1.25rem 1.5rem; flex: 1; display: flex; flex-direction: column; }
+
+  .pg-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    margin-bottom: .35rem;
+  }
+
+  .pg-area {
+    font-size: .82rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    margin-bottom: 1rem;
+  }
+
+  .pg-area i { color: var(--accent); font-size: .75rem; }
+
+  .pg-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .pg-price {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.15rem;
+    color: var(--accent);
+  }
+
+  .pg-price span { font-size: .75rem; font-weight: 500; color: var(--muted); }
+
+  .pg-vacancy {
+    font-size: .78rem;
+    color: var(--muted);
+    background: var(--paper);
+    padding: .3rem .7rem;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+
+  .view-btn {
+    display: block;
+    margin: 1rem 1.5rem 1.5rem;
+    padding: .65rem;
+    background: var(--ink);
+    color: #fff;
+    text-align: center;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: .88rem;
+    text-decoration: none;
+    transition: background .2s;
+  }
+
+  .view-btn:hover { background: var(--accent); color: #fff; }
+
+  /* empty state */
+  .empty-state {
+    text-align: center;
+    padding: 5rem 1rem;
+    grid-column: 1 / -1;
+  }
+
+  .empty-icon {
+    font-size: 3.5rem;
+    color: var(--border);
+    margin-bottom: 1.5rem;
+  }
+
+  .empty-state h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: .5rem;
+  }
+
+  .empty-state p { color: var(--muted); margin-bottom: 1.5rem; }
+</style>
+{% endblock extra_css %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        {% for pg in PI %}
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 shadow">
-                {% if pg.image_set.first %}
-                <img src="{{ pg.image_set.first.image.url }}" class="card-img-top" alt="{{ pg.pgname }}">
-                {% endif %}
-                <div class="card-body" align="center">
-                    <h5 class="card-title">{{ pg.pgname }}</h5>
-                        <p class="card-text">
-                        <strong>Area:</strong> {{ pg.area }}<br>
-                        
-                        <strong>Two Sharing:</strong> {{ pg.two_sharing}} <br>
-                         <strong>Vaccancy:</strong> {{ pg.vacancy2}} <br>
-                        <strong>Fees:</strong> ₹{{ pg.fees2 }}<br>
-                       
-                        
-                    </p>
-                    <a href="{% url 'pgdetails' pg.id %}" class="btn btn-primary">View Details</a>
-                </div>
-            </div>
+<div class="results-wrap">
+  <div class="results-header">
+    <h1>Available <span>PGs</span></h1>
+    <span class="count-badge">{{ PI|length }} listing{{ PI|length|pluralize }}</span>
+  </div>
+
+  <div class="pg-grid">
+    {% for pg in PI %}
+    <div class="pg-card">
+      <div class="pg-card-img">
+        {% if pg.image_set.first %}
+          <img src="{{ pg.image_set.first.image.url }}" alt="{{ pg.pgname }}">
+        {% else %}
+          <div class="no-img"><i class="fas fa-building"></i></div>
+        {% endif %}
+        {% if pg.two_sharing %}<span class="sharing-tag">2-sharing</span>{% elif pg.three_sharing %}<span class="sharing-tag">3-sharing</span>{% elif pg.four_sharing %}<span class="sharing-tag">4-sharing</span>{% endif %}
+      </div>
+
+      <div class="pg-card-body">
+        <div class="pg-name">{{ pg.pgname }}</div>
+        <div class="pg-area"><i class="fas fa-location-dot"></i>{{ pg.area }}</div>
+
+        <div class="pg-meta">
+          <div class="pg-price">
+            ₹{{ pg.fees2 }}<span>/mo</span>
+          </div>
+          <div class="pg-vacancy">
+            <i class="fas fa-bed fa-xs me-1"></i>{{ pg.vacancy2 }} seat{{ pg.vacancy2|pluralize }}
+          </div>
         </div>
-        {% empty %}
-        <p>No PGs found.</p>
-        {% endfor %}
+      </div>
+
+      <a href="{% url 'pgdetails' pg.id %}" class="view-btn">View Details →</a>
     </div>
+
+    {% empty %}
+    <div class="empty-state">
+      <div class="empty-icon"><i class="fas fa-house-circle-xmark"></i></div>
+      <h3>No PGs found</h3>
+      <p>Try a different area or adjust your budget range.</p>
+      <a href="{% url 'home' %}" class="btn-pill primary">← Back to Search</a>
+    </div>
+    {% endfor %}
+  </div>
 </div>
 {% endblock content %}

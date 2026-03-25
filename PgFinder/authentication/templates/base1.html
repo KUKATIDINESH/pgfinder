@@ -2,22 +2,374 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>{% block title %}{% endblock title %}</title>
-    <!-- Bootstrap 5 CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    {% block ex_css %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Portal{% endblock title %} | NEXUS</title>
 
-     {% endblock ex_css %}
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Futuristic Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* ═══════════════════════════════════════
+       CSS VARIABLES — single source of truth
+    ═══════════════════════════════════════ */
+    :root {
+      --cyan:        #00f5ff;
+      --cyan-dim:    rgba(0,245,255,0.15);
+      --cyan-glow:   rgba(0,245,255,0.5);
+      --green:       #00ff88;
+      --green-dim:   rgba(0,255,136,0.1);
+      --green-glow:  rgba(0,255,136,0.4);
+      --magenta:     #ff00aa;
+      --dark:        #03060d;
+      --dark2:       #060c18;
+      --panel:       rgba(6,18,40,0.85);
+      --border:      rgba(0,245,255,0.25);
+      --text:        #c8e8f0;
+      --text-muted:  rgba(200,232,240,0.45);
+      --font-display: 'Orbitron', monospace;
+      --font-body:    'Rajdhani', sans-serif;
+    }
+
+    /* ═══════════════════════════════════════
+       RESET & BASE
+    ═══════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--dark) !important;
+      font-family: var(--font-body);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ═══════════════════════════════════════
+       ANIMATED GRID BACKGROUND
+    ═══════════════════════════════════════ */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        linear-gradient(rgba(0,245,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,245,255,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      animation: gridDrift 20s linear infinite;
+    }
+    @keyframes gridDrift {
+      to { background-position: 48px 48px; }
+    }
+
+    /* Radial ambient glow */
+    body::after {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 60% at 50% 40%, rgba(0,80,120,0.3) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 50% at 15% 80%, rgba(0,255,136,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 50% at 85% 10%, rgba(255,0,170,0.05) 0%, transparent 60%);
+    }
+
+    /* ═══════════════════════════════════════
+       GLOBAL PARTICLES LAYER
+    ═══════════════════════════════════════ */
+    #base-particles {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    }
+    .particle {
+      position: absolute; border-radius: 50%;
+      background: var(--cyan); box-shadow: 0 0 6px var(--cyan);
+      animation: floatUp linear infinite; opacity: 0;
+    }
+    @keyframes floatUp {
+      0%   { transform: translateY(100vh) translateX(0);  opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 0.5; }
+      100% { transform: translateY(-10vh) translateX(25px); opacity: 0; }
+    }
+
+    /* ═══════════════════════════════════════
+       NAVBAR
+    ═══════════════════════════════════════ */
+    .nexus-nav {
+      position: relative; z-index: 100;
+      background: rgba(3,6,13,0.9);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      padding: 0 32px;
+      height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 4px 30px rgba(0,245,255,0.05);
+    }
+
+    .nav-brand {
+      font-family: var(--font-display);
+      font-size: 16px; font-weight: 900;
+      letter-spacing: 0.3em; color: #fff;
+      text-decoration: none; text-transform: uppercase;
+      display: flex; align-items: center; gap: 10px;
+      transition: opacity 0.2s;
+    }
+    .nav-brand:hover { opacity: 0.8; color: #fff; }
+
+    .brand-icon {
+      width: 28px; height: 28px;
+      border: 1.5px solid var(--cyan);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 12px var(--cyan-glow);
+      flex-shrink: 0;
+    }
+    .brand-icon svg { width: 14px; height: 14px; stroke: var(--cyan); }
+
+    .brand-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+      animation: blink 2s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.2;} }
+
+    .nav-links {
+      display: flex; align-items: center; gap: 28px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--text-muted); text-decoration: none;
+      position: relative; transition: color 0.2s;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute;
+      bottom: -4px; left: 0; right: 0; height: 1px;
+      background: var(--cyan);
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 0.3s;
+    }
+    .nav-links a:hover { color: var(--cyan); }
+    .nav-links a:hover::after { transform: scaleX(1); }
+    .nav-links a.active { color: var(--cyan); }
+    .nav-links a.active::after { transform: scaleX(1); }
+
+    /* ── Mobile menu toggle ── */
+    .nav-toggle {
+      display: none; background: none; border: none;
+      cursor: pointer; padding: 4px;
+      flex-direction: column; gap: 5px;
+    }
+    .nav-toggle span {
+      display: block; width: 22px; height: 1.5px;
+      background: var(--cyan); border-radius: 2px;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    .nav-toggle.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    .nav-toggle.open span:nth-child(2) { opacity: 0; }
+    .nav-toggle.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+    @media (max-width: 640px) {
+      .nav-toggle { display: flex; }
+      .nav-links {
+        display: none; position: absolute;
+        top: 60px; left: 0; right: 0;
+        flex-direction: column; gap: 0;
+        background: rgba(3,6,13,0.97);
+        border-bottom: 1px solid var(--border);
+        padding: 12px 0;
+      }
+      .nav-links.open { display: flex; }
+      .nav-links li { width: 100%; }
+      .nav-links a { display: block; padding: 12px 32px; }
+    }
+
+    /* ═══════════════════════════════════════
+       SCAN LINE — top of page accent
+    ═══════════════════════════════════════ */
+    .scan-line {
+      position: fixed; top: 60px; left: 0; right: 0;
+      height: 1px; z-index: 99; pointer-events: none;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      animation: scanH 4s ease-in-out infinite;
+      opacity: 0.5;
+    }
+    @keyframes scanH {
+      0%,100% { transform: scaleX(0); opacity: 0; }
+      50%      { transform: scaleX(1); opacity: 0.5; }
+    }
+
+    /* ═══════════════════════════════════════
+       MAIN CONTENT AREA
+    ═══════════════════════════════════════ */
+    .nexus-main {
+      position: relative; z-index: 10;
+      min-height: calc(100vh - 60px);
+    }
+
+    /* ═══════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════ */
+    .nexus-footer {
+      position: relative; z-index: 10;
+      background: rgba(3,6,13,0.9);
+      border-top: 1px solid var(--border);
+      padding: 20px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+      backdrop-filter: blur(20px);
+    }
+    .footer-brand {
+      font-family: var(--font-display);
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.25em; color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .footer-brand span { color: var(--cyan); }
+    .footer-copy {
+      font-size: 11px; letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+    .footer-status {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 11px; letter-spacing: 0.1em; color: var(--green);
+    }
+    .status-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green); box-shadow: 0 0 6px var(--green);
+      animation: blink 2.5s ease-in-out infinite;
+    }
+
+    /* ═══════════════════════════════════════
+       BOOTSTRAP OVERRIDES
+    ═══════════════════════════════════════ */
+    .btn-primary {
+      background: transparent; border: 1.5px solid var(--cyan);
+      color: var(--cyan); font-family: var(--font-display);
+      font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+      border-radius: 3px; padding: 10px 20px;
+      transition: all 0.3s; position: relative; overflow: hidden;
+    }
+    .btn-primary:hover {
+      color: var(--dark); background: var(--cyan);
+      box-shadow: 0 0 20px var(--cyan-glow); border-color: var(--cyan);
+    }
+    .btn-success {
+      background: transparent; border: 1.5px solid var(--green);
+      color: var(--green); font-family: var(--font-display);
+      font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+      border-radius: 3px; padding: 10px 20px;
+      transition: all 0.3s;
+    }
+    .btn-success:hover {
+      color: var(--dark); background: var(--green);
+      box-shadow: 0 0 20px var(--green-glow); border-color: var(--green);
+    }
+    .card {
+      background: var(--panel) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 4px !important;
+      backdrop-filter: blur(20px);
+      color: var(--text) !important;
+    }
+    a { color: var(--cyan); }
+    a:hover { color: var(--cyan); opacity: 0.8; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--dark2); }
+    ::-webkit-scrollbar-thumb { background: rgba(0,245,255,0.3); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
+
+    /* Selection */
+    ::selection { background: var(--cyan-dim); color: var(--cyan); }
+  </style>
+
+  {% block ex_css %}{% endblock ex_css %}
 </head>
-<body class="bg-light">
-{% block content %}
 
-{% endblock content %}
-<!-- Bootstrap JS (Optional for advanced components) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-{% block extra_js %}
+<body>
 
-{% endblock extra_js %}
+  <!-- Global particle canvas -->
+  <div id="base-particles"></div>
+
+  <!-- ── Navbar ── -->
+  <nav class="nexus-nav">
+    <a href="/" class="nav-brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      </div>
+      NEXUS
+      <div class="brand-dot"></div>
+    </a>
+
+    <button class="nav-toggle" id="navToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+
+    <ul class="nav-links" id="navLinks">
+      {% block nav_links %}
+      <li><a href="/" class="active">Home</a></li>
+      <li><a href="{% url 'login' %}">Login</a></li>
+      <li><a href="{% url 'signin' %}">Register</a></li>
+      {% endblock nav_links %}
+    </ul>
+  </nav>
+
+  <!-- Scan line accent -->
+  <div class="scan-line"></div>
+
+  <!-- ── Page content ── -->
+  <main class="nexus-main">
+    {% block content %}{% endblock content %}
+  </main>
+
+  <!-- ── Footer ── -->
+  <footer class="nexus-footer">
+    <div class="footer-brand">NX<span>·</span>NEXUS</div>
+    <div class="footer-copy">{% now "Y" %} — All systems nominal</div>
+    <div class="footer-status"><div class="status-dot"></div>System Online</div>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // ── Particles ──
+    const pc = document.getElementById('base-particles');
+    for (let i = 0; i < 25; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = Math.random() > 0.7 ? 3 : 2;
+      p.style.cssText = `
+        left: ${Math.random() * 100}%;
+        width: ${size}px; height: ${size}px;
+        animation-duration: ${9 + Math.random() * 14}s;
+        animation-delay: ${Math.random() * 14}s;
+      `;
+      pc.appendChild(p);
+    }
+
+    // ── Mobile nav toggle ──
+    const toggle = document.getElementById('navToggle');
+    const links  = document.getElementById('navLinks');
+    toggle.addEventListener('click', () => {
+      toggle.classList.toggle('open');
+      links.classList.toggle('open');
+    });
+
+    // ── Active nav highlight ──
+    const path = window.location.pathname;
+    document.querySelectorAll('.nav-links a').forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === path);
+    });
+  </script>
+
+  {% block extra_js %}{% endblock extra_js %}
 </body>
 </html>

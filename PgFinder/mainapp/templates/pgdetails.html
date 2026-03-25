@@ -1,71 +1,321 @@
 {% extends 'base.html' %}
+{% block title %}{{ pg.pgname }}{% endblock %}
+
 {% block extra_css %}
-
 <style>
-  body{
-    height: 100%;
-    width: 100%;
+  .detail-wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
   }
-  img{
-    width: 100px;
-    height: 100px;
-  }
-  #pgimage:hover{
-    transform: scale(1.2);
-  }
- .row{
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 10px;
 
- }
- .container{
+  /* breadcrumb */
+  .bc {
+    font-size: .8rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
     display: flex;
-    flex-direction: column;
     align-items: center;
- }
+    gap: .5rem;
+  }
+  .bc a { color: var(--accent); text-decoration: none; }
+  .bc i { font-size: .6rem; }
+
+  /* header row */
+  .pg-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .pg-detail-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 800;
+    letter-spacing: -.04em;
+  }
+
+  .pg-detail-header .area-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .85rem;
+    color: var(--muted);
+    margin-top: .3rem;
+  }
+
+  .pg-detail-header .area-tag i { color: var(--accent); }
+
+  .contact-btn {
+    padding: .75rem 1.75rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: .9rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    transition: all .2s;
+    flex-shrink: 0;
+  }
+
+  .contact-btn:hover { background: #e0381a; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,78,26,.35); color: #fff; }
+
+  /* gallery */
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: .75rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .gallery img {
+    width: 100%; height: 150px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all .2s;
+  }
+
+  .gallery img:hover { border-color: var(--accent); transform: scale(1.02); }
+
+  /* info cards */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .info-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+  }
+
+  .info-card-title {
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  .info-card-title i { color: var(--accent); }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .55rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: .9rem;
+  }
+
+  .info-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+  .info-row .key { color: var(--muted); }
+  .info-row .val { font-weight: 600; }
+
+  /* sharing table */
+  .sharing-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 2.5rem;
+  }
+
+  .sharing-table th {
+    background: var(--ink);
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: .9rem 1.25rem;
+    text-align: left;
+  }
+
+  .sharing-table td {
+    padding: .9rem 1.25rem;
+    font-size: .9rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sharing-table tr:last-child td { border-bottom: none; }
+  .sharing-table tr:hover td { background: rgba(255,78,26,.04); }
+
+  .price-cell { font-family: 'Syne', sans-serif; font-weight: 800; color: var(--accent); font-size: 1rem; }
+
+  /* amenities */
+  .amenities-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .amenity-tag {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .5rem 1.1rem;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    font-size: .85rem;
+    font-weight: 500;
+    transition: all .2s;
+  }
+
+  .amenity-tag i { color: var(--accent); font-size: .8rem; }
+  .amenity-tag:hover { border-color: var(--accent); background: rgba(255,78,26,.05); }
+
+  /* section headers */
+  .sec-head {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  .sec-head::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* lightbox */
+  .lb-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.9);
+    z-index: 5000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lb-overlay.open { display: flex; }
+  .lb-overlay img { max-width: 90vw; max-height: 90vh; border-radius: 12px; }
+  .lb-close { position: absolute; top: 1rem; right: 1.5rem; color: #fff; font-size: 2rem; cursor: pointer; line-height: 1; }
 </style>
 {% endblock extra_css %}
+
 {% block content %}
-<div id="container" class="container mt-4" style="max-height: 600px; overflow-y: auto;">
-        <h2>{{ pg.pgname }}</h2>
-        <p><strong>Owner:</strong> {{ pg.ownername }}</p>
-        <p><strong>Email:</strong> {{ pg.mail }}</p>
-        <p><strong>Area:</strong> {{ pg.area }}</p>
-        <p><strong>Address:</strong> {{ pg.address }}</p>
+<div class="detail-wrap">
 
-        <h4>Facilities</h4>
-        <ul>
-            {% if pg.washing_machine %}<li>Washing Machine</li>{% endif %}
-            {% if pg.water_heater %}<li>Water Heater</li>{% endif %}
-            {% if pg.ac %}<li>AC</li>{% endif %}
-        </ul>
+  <!-- breadcrumb -->
+  <div class="bc">
+    <a href="{% url 'home' %}">Home</a>
+    <i class="fas fa-chevron-right"></i>
+    <span>{{ pg.pgname }}</span>
+  </div>
 
-        <h4>Languages Known</h4>
-        <p>{{ pg.languageknown1 }}, {{ pg.languageknown2 }}, {{ pg.languageknown3 }}</p>
+  <!-- header -->
+  <div class="pg-detail-header">
+    <div>
+      <h1>{{ pg.pgname }}</h1>
+      <div class="area-tag"><i class="fas fa-location-dot"></i>{{ pg.area }} · {{ pg.address }}</div>
+    </div>
+    <a href="tel:{{ pg.phno }}" class="contact-btn"><i class="fas fa-phone"></i>{{ pg.phno }}</a>
+  </div>
 
-        <h4>Sharing Info</h4>
-        <ul>
-            {% if pg.two_sharing %}<li>2 Sharing: {{ pg.vacancy2 }} seats @ ₹{{ pg.fees2 }}</li>{% endif %}
-            {% if pg.three_sharing %}<li>3 Sharing: {{ pg.vacancy3 }} seats @ ₹{{ pg.fees3 }}</li>{% endif %}
-            {% if pg.four_sharing %}<li>4 Sharing: {{ pg.vacancy4 }} seats @ ₹{{ pg.fees4 }}</li>{% endif %}
-            {% if pg.other_sharing %}<li>Other: {{ pg.vacancy }} seats @ ₹{{ pg.fees }}</li>{% endif %}
-        </ul>
+  <!-- gallery -->
+  {% if pg.images.all %}
+  <h3 class="sec-head"><i class="fas fa-images" style="color:var(--accent)"></i>Photos</h3>
+  <div class="gallery">
+    {% for img in pg.images.all %}
+    <img src="{{ img.image.url }}" alt="PG Image" onclick="openLB(this.src)">
+    {% endfor %}
+  </div>
+  {% endif %}
 
-        <h4>Contact</h4>
-        <p>Phone: {{ pg.phno }}</p>
-
-        <h4>PG Images</h4>
-        <div class="row">
-            {% for img in pg.images.all %}
-                <div class="col-md-3 mb-3" style="width: auto; height: auto;">
-                    <img src="{{ img.image.url }}" class="img-fluid rounded border" alt="PG Image" id="pgimage">
-                </div>
-            {% empty %}
-                <p>No images uploaded for this PG.</p>
-            {% endfor %}
-        </div>
+  <!-- info grid -->
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="info-card-title"><i class="fas fa-user"></i>Owner Info</div>
+      <div class="info-row"><span class="key">Name</span><span class="val">{{ pg.ownername }}</span></div>
+      <div class="info-row"><span class="key">Email</span><span class="val" style="font-size:.82rem;word-break:break-all">{{ pg.mail }}</span></div>
+      <div class="info-row"><span class="key">Phone</span><span class="val">{{ pg.phno }}</span></div>
     </div>
 
+    <div class="info-card">
+      <div class="info-card-title"><i class="fas fa-language"></i>Languages</div>
+      {% if pg.languageknown1 %}<div class="info-row"><span class="key">Primary</span><span class="val">{{ pg.languageknown1 }}</span></div>{% endif %}
+      {% if pg.languageknown2 %}<div class="info-row"><span class="key">Secondary</span><span class="val">{{ pg.languageknown2 }}</span></div>{% endif %}
+      {% if pg.languageknown3 %}<div class="info-row"><span class="key">Additional</span><span class="val">{{ pg.languageknown3 }}</span></div>{% endif %}
+    </div>
+  </div>
+
+  <!-- amenities -->
+  <h3 class="sec-head"><i class="fas fa-star" style="color:var(--accent)"></i>Amenities</h3>
+  <div class="amenities-grid">
+    {% if pg.washing_machine %}<div class="amenity-tag"><i class="fas fa-soap"></i>Washing Machine</div>{% endif %}
+    {% if pg.water_heater %}<div class="amenity-tag"><i class="fas fa-fire"></i>Water Heater</div>{% endif %}
+    {% if pg.ac %}<div class="amenity-tag"><i class="fas fa-snowflake"></i>AC</div>{% endif %}
+  </div>
+
+  <!-- sharing table -->
+  <h3 class="sec-head"><i class="fas fa-bed" style="color:var(--accent)"></i>Sharing & Pricing</h3>
+  <table class="sharing-table">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Vacancy</th>
+        <th>Monthly Rent</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if pg.two_sharing %}<tr><td>2 Sharing</td><td>{{ pg.vacancy2 }} seat{{ pg.vacancy2|pluralize }}</td><td class="price-cell">₹{{ pg.fees2 }}</td></tr>{% endif %}
+      {% if pg.three_sharing %}<tr><td>3 Sharing</td><td>{{ pg.vacancy3 }} seat{{ pg.vacancy3|pluralize }}</td><td class="price-cell">₹{{ pg.fees3 }}</td></tr>{% endif %}
+      {% if pg.four_sharing %}<tr><td>4 Sharing</td><td>{{ pg.vacancy4 }} seat{{ pg.vacancy4|pluralize }}</td><td class="price-cell">₹{{ pg.fees4 }}</td></tr>{% endif %}
+      {% if pg.other_sharing %}<tr><td>Custom</td><td>{{ pg.vacancy }} seat{{ pg.vacancy|pluralize }}</td><td class="price-cell">₹{{ pg.fees }}</td></tr>{% endif %}
+    </tbody>
+  </table>
+
+  <a href="{% url 'home' %}" class="btn-pill ghost"><i class="fas fa-arrow-left"></i>Back to Search</a>
+</div>
+
+<!-- lightbox -->
+<div class="lb-overlay" id="lb" onclick="closeLB()">
+  <div class="lb-close" onclick="closeLB()">×</div>
+  <img id="lbImg" src="" alt="">
+</div>
+
 {% endblock content %}
+
+{% block extra_js %}
+<script>
+function openLB(src) {
+  document.getElementById('lbImg').src = src;
+  document.getElementById('lb').classList.add('open');
+}
+function closeLB() {
+  document.getElementById('lb').classList.remove('open');
+}
+</script>
+{% endblock extra_js %}

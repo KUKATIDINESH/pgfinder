@@ -1,195 +1,923 @@
 {% extends 'base.html' %}
-{% block title %}HOME{% endblock %}
+{% block title %}Modify PG - {{ pg.pgname }}{% endblock %}
 
-{% block extra_css %}{% endblock extra_css %}
+{% block extra_css %}
+<style>
+    .modify-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .modify-header {
+        text-align: center;
+        margin-bottom: 50px;
+        padding: 60px 20px;
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 25px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .modify-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+            45deg,
+            transparent,
+            rgba(102, 126, 234, 0.05),
+            transparent
+        );
+        transform: rotate(45deg);
+        animation: shimmer 3s infinite;
+    }
+
+    .page-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 15px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .pg-name-highlight {
+        color: var(--accent-color);
+        font-weight: 600;
+    }
+
+    .page-subtitle {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+        margin-bottom: 30px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .modify-form {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 25px;
+        padding: 40px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .modify-form::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+            45deg,
+            transparent,
+            rgba(118, 75, 162, 0.05),
+            transparent
+        );
+        transform: rotate(45deg);
+        animation: shimmer 4s infinite;
+    }
+
+    .form-section {
+        margin-bottom: 40px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--glass-border);
+    }
+
+    .section-icon {
+        width: 45px;
+        height: 45px;
+        background: var(--primary-gradient);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+    }
+
+    .form-group {
+        position: relative;
+    }
+
+    .form-label {
+        display: block;
+        color: var(--text-secondary);
+        font-weight: 500;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 15px 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid var(--glass-border);
+        border-radius: 12px;
+        color: var(--text-primary);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        outline: none;
+    }
+
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .form-control::placeholder {
+        color: var(--text-secondary);
+        opacity: 0.6;
+    }
+
+    .checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-top: 15px;
+    }
+
+    .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid var(--glass-border);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .checkbox-item:hover {
+        background: rgba(102, 126, 234, 0.1);
+        border-color: var(--accent-color);
+        transform: translateY(-2px);
+    }
+
+    .checkbox-item input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--accent-color);
+        cursor: pointer;
+    }
+
+    .checkbox-item.checked {
+        background: rgba(102, 126, 234, 0.15);
+        border-color: var(--accent-color);
+    }
+
+    .checkbox-label {
+        color: var(--text-primary);
+        font-weight: 500;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .sharing-details {
+        margin-top: 15px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        border: 1px solid var(--glass-border);
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .sharing-details.show {
+        opacity: 1;
+        max-height: 200px;
+        margin-top: 15px;
+    }
+
+    .sharing-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .image-preview-section {
+        margin-bottom: 40px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .current-images {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .image-preview-card {
+        position: relative;
+        border-radius: 15px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid var(--glass-border);
+        transition: all 0.3s ease;
+    }
+
+    .image-preview-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .image-preview-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        transition: all 0.3s ease;
+    }
+
+    .image-preview-card:hover img {
+        transform: scale(1.1);
+    }
+
+    .image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .image-preview-card:hover .image-overlay {
+        opacity: 1;
+    }
+
+    .image-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .image-action-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--glass-bg);
+        border: 2px solid var(--glass-border);
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .image-action-btn:hover {
+        background: var(--accent-color);
+        color: white;
+        transform: scale(1.1);
+    }
+
+    .image-action-btn.delete:hover {
+        background: #f44336;
+    }
+
+    .file-upload {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+    }
+
+    .file-upload input[type="file"] {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .file-upload-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        padding: 20px;
+        background: rgba(79, 172, 254, 0.1);
+        border: 2px dashed rgba(79, 172, 254, 0.5);
+        border-radius: 12px;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .file-upload-label:hover {
+        background: rgba(79, 172, 254, 0.2);
+        border-color: var(--accent-color);
+        transform: translateY(-2px);
+    }
+
+    .file-upload-icon {
+        font-size: 2rem;
+        color: var(--accent-color);
+    }
+
+    .file-upload-text {
+        text-align: center;
+    }
+
+    .file-upload-title {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .file-upload-subtitle {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+
+    .error-list {
+        background: rgba(244, 67, 54, 0.1);
+        border: 1px solid rgba(244, 67, 54, 0.3);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .error-list ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        color: #f44336;
+    }
+
+    .error-list li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .error-list li:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 40px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .btn-submit {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 15px 40px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-submit::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .btn-submit:hover::before {
+        left: 100%;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-cancel {
+        background: var(--glass-bg);
+        color: var(--text-secondary);
+        border: 2px solid var(--glass-border);
+        border-radius: 50px;
+        padding: 15px 40px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-cancel:hover {
+        background: rgba(244, 67, 54, 0.1);
+        border-color: #f44336;
+        color: #f44336;
+        transform: translateY(-2px);
+    }
+
+    .note-warning {
+        background: rgba(255, 193, 7, 0.1);
+        border: 1px solid rgba(255, 193, 7, 0.3);
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 20px;
+        color: #ffc107;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+
+    @media (max-width: 768px) {
+        .modify-container {
+            padding: 20px 15px;
+        }
+
+        .modify-header {
+            padding: 40px 20px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+        }
+
+        .modify-form {
+            padding: 25px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .sharing-inputs {
+            grid-template-columns: 1fr;
+        }
+
+        .current-images {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn-submit, .btn-cancel {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .checkbox-group {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .current-images {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock extra_css %}
+
 {% block content %}
+<div class="modify-container">
+    <!-- Modify Header -->
+    <div class="modify-header" data-aos="fade-up">
+        <h1 class="page-title">Modify PG Details</h1>
+        <p class="page-subtitle">Update information for <span class="pg-name-highlight">{{ pg.pgname }}</span></p>
+    </div>
 
+    <!-- Modify Form -->
+    <form method="post" enctype="multipart/form-data" id="modifyForm" class="modify-form" data-aos="fade-up" data-aos-delay="100">
+        {% csrf_token %}
 
-
-<div class="container mt-5 mb-5">
-    <div class="card shadow-lg">
-        <div class="card-header bg-primary text-white">
-            <h3 class="mb-0">PG Information Form</h3>
+        {% if errors %}
+        <div class="error-list">
+            <ul>
+                {% for error in errors %}
+                <li>
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {{ error }}
+                </li>
+                {% endfor %}
+            </ul>
         </div>
-        <div class="card-body">
-    <form method="post" enctype="multipart/form-data" id="myform">
+        {% endif %}
 
-
-    {% csrf_token %}
-
-    {% if errors %}
-        <ul class="text-danger">
-            {% for error in errors %}
-                <li>{{ error }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-
-    <h5 class="mb-4">PG Information</h5>
-    {% for field in form %}
-        <div class="mb-3">
-            <label class="form-label">{{ field.label }}</label>
-            {{ field }}
-            {% if field.errors %}
-                <div class="text-danger small">
-                    {{ field.errors }}
+        <!-- Basic Information Section -->
+        <div class="form-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-info-circle"></i>
                 </div>
-            {% endif %}
-        </div>
-    {% endfor %}
-
-    <h5 class="mt-4 mb-3">Upload Your PG Images</h5>
-    <p style="color: red;"> NOTE: if you are uploading new images then  old images can be removed  so, include that images also</p>
-    {% for field in image_form %}
-    <div class="mb-3">
-        <label class="form-label">{{ field.label }}</label>
-        {{ field }}
-
-        {# Show preview of already uploaded image if available #}
-        {% if images %}
-            <div style="margin-top: 10px;">
-                <label class="form-label">Previously Uploaded:</label><br>
-                {% for img in images %}
-                    <img src="{{ img.image.url }}" width="150" style="margin-right: 10px;" />
+                <h3 class="section-title">Basic Information</h3>
+            </div>
+            <div class="form-grid">
+                {% for field in form %}
+                    {% if field.name != 'pguser' and field.name not in 'two_sharing,three_sharing,four_sharing,other_sharing,vacancy2,vacancy3,vacancy4,vacancy,fees2,fees3,fees4,fees,languageknown1,languageknown2,languageknown3' %}
+                    <div class="form-group">
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ field.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
                 {% endfor %}
             </div>
-        {% endif %}
-
-        {% if field.errors %}
-            <div class="text-danger small">
-                {{ field.errors }}
-            </div>
-        {% endif %}
-    </div>
-{% endfor %}
-
-
-    <button type="submit" class="btn btn-success">Submit</button>
-</form>
-
         </div>
-    </div>
+
+        <!-- Sharing Options Section -->
+        <div class="form-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-bed"></i>
+                </div>
+                <h3 class="section-title">Sharing Options</h3>
+            </div>
+            <div class="checkbox-group">
+                <label class="checkbox-item {% if pg.two_sharing %}checked{% endif %}">
+                    <input type="checkbox" name="two_sharing" class="sharing-checkbox" {% if pg.two_sharing %}checked{% endif %}>
+                    <span class="checkbox-label">2 Sharing</span>
+                </label>
+                <label class="checkbox-item {% if pg.three_sharing %}checked{% endif %}">
+                    <input type="checkbox" name="three_sharing" class="sharing-checkbox" {% if pg.three_sharing %}checked{% endif %}>
+                    <span class="checkbox-label">3 Sharing</span>
+                </label>
+                <label class="checkbox-item {% if pg.four_sharing %}checked{% endif %}">
+                    <input type="checkbox" name="four_sharing" class="sharing-checkbox" {% if pg.four_sharing %}checked{% endif %}>
+                    <span class="checkbox-label">4 Sharing</span>
+                </label>
+                <label class="checkbox-item {% if pg.other_sharing %}checked{% endif %}">
+                    <input type="checkbox" name="other_sharing" class="sharing-checkbox" {% if pg.other_sharing %}checked{% endif %}>
+                    <span class="checkbox-label">Custom Sharing</span>
+                </label>
+            </div>
+
+            <!-- Dynamic sharing details -->
+            <div id="sharingDetails" class="sharing-details show">
+                <div class="sharing-inputs">
+                    <div class="form-group">
+                        <label class="form-label">Vacancy</label>
+                        <input type="number" name="vacancy" class="form-control" value="{{ pg.vacancy }}" placeholder="Number of seats available">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Monthly Rent (₹)</label>
+                        <input type="number" name="fees" class="form-control" value="{{ pg.fees }}" placeholder="Rent per month">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Languages Section -->
+        <div class="form-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-language"></i>
+                </div>
+                <h3 class="section-title">Languages Known</h3>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.languageknown1.id_for_label }}">Primary Language</label>
+                    {{ form.languageknown1 }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.languageknown2.id_for_label }}">Secondary Language</label>
+                    {{ form.languageknown2 }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.languageknown3.id_for_label }}">Additional Language</label>
+                    {{ form.languageknown3 }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Images Section -->
+        <div class="image-preview-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-images"></i>
+                </div>
+                <h3 class="section-title">Current Images</h3>
+            </div>
+            <div class="current-images">
+                {% for img in images %}
+                <div class="image-preview-card" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|multiply:50 }}">
+                    <img src="{{ img.image.url }}" alt="PG Image {{ forloop.counter }}">
+                    <div class="image-overlay">
+                        <div class="image-actions">
+                            <a href="{{ img.image.url }}" target="_blank" class="image-action-btn" title="View Full Size">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'delete_image' img.id %}" class="image-action-btn delete" title="Delete Image" 
+                               onclick="return confirm('Are you sure you want to delete this image?');">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <p>No images uploaded yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- New Images Section -->
+        <div class="form-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <h3 class="section-title">Add New Images</h3>
+            </div>
+            <div class="note-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span><strong>Note:</strong> If you are uploading new images, old images can be removed. Include those images also if needed.</span>
+            </div>
+            <div class="form-grid">
+                {% for field in image_form %}
+                <div class="form-group">
+                    <div class="file-upload">
+                        <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}" accept="image/*" multiple>
+                        <label class="file-upload-label" for="{{ field.id_for_label }}">
+                            <div class="file-upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <div class="file-upload-text">
+                                <div class="file-upload-title">Upload New Images</div>
+                                <div class="file-upload-subtitle">Click to browse or drag and drop</div>
+                            </div>
+                        </label>
+                    </div>
+                    {% if field.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ field.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button type="submit" class="btn-submit">
+                <i class="fas fa-save me-2"></i>
+                Save Changes
+            </button>
+            <a href="{% url 'pglist_for_modification' %}" class="btn-cancel">
+                <i class="fas fa-times me-2"></i>
+                Cancel
+            </a>
+        </div>
+    </form>
 </div>
 {% endblock content %}
+
 {% block extra_js %}
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize AOS
+    AOS.init({
+        duration: 1000,
+        once: true,
+        offset: 100
+    });
 
-    const fields=document.querySelectorAll('.vacancy2, .vacancy3, .vacancy4, .vacancy, .fees2, .fees3, .fees4, .fees');
+    const form = document.getElementById('modifyForm');
+    const sharingCheckboxes = document.querySelectorAll('.sharing-checkbox');
+    const sharingDetails = document.getElementById('sharingDetails');
+    
+    // Enable all sharing fields initially
+    const fields = document.querySelectorAll('.vacancy2, .vacancy3, .vacancy4, .vacancy, .fees2, .fees3, .fees4, .fees');
+    fields.forEach(field => {
+        field.disabled = false;
+    });
+    
+    // Sharing checkbox functionality
+    const sharingData = {
+        'two_sharing': { vacancy: 'vacancy2', fees: 'fees2' },
+        'three_sharing': { vacancy: 'vacancy3', fees: 'fees3' },
+        'four_sharing': { vacancy: 'vacancy4', fees: 'fees4' },
+        'other_sharing': { vacancy: 'vacancy', fees: 'fees' }
+    };
 
-    window.onload=function(){
-        fields.forEach(field=>{
-            field.disabled=false
-        })
+    sharingCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const parent = this.closest('.checkbox-item');
+            
+            if (this.checked) {
+                parent.classList.add('checked');
+                updateSharingDetails(this.name);
+            } else {
+                parent.classList.remove('checked');
+                clearSharingDetails(this.name);
+            }
+        });
+    });
+
+    function updateSharingDetails(sharingType) {
+        const data = sharingData[sharingType];
+        if (data) {
+            // Update sharing details visibility
+            const anyChecked = Array.from(sharingCheckboxes).some(cb => cb.checked);
+            sharingDetails.classList.toggle('show', anyChecked);
+            
+            console.log(`Updated ${sharingType} details`);
+        }
     }
 
-   let two_sharing=document.getElementsByClassName('two_sharing')[0]
-   let vacancy2=document.getElementsByClassName('vacancy2')[0]
-   let fees2=document.getElementsByClassName('fees2')[0]
-
-   let three_sharing=document.getElementsByClassName('three_sharing')[0]
-    let vacancy3=document.getElementsByClassName('vacancy3')[0]
-   let fees3=document.getElementsByClassName('fees3')[0]
-
-   let four_sharing=document.getElementsByClassName('four_sharing')[0]
-   let vacancy4=document.getElementsByClassName('vacancy4')[0]
-   let fees4=document.getElementsByClassName('fees4')[0]
-
-
-   let other_sharing=document.getElementsByClassName('other_sharing')[0]
-   let vacancy=document.getElementsByClassName('vacancy')[0]
-   let fees=document.getElementsByClassName('fees')[0]
-   
-   two_sharing.addEventListener("change",()=>{
-    if (two_sharing.checked){
-        vacancy2.disabled=false;
-        vacancy2.required=true;
-        
-
-        fees2.disabled=false;
-        fees2.required=true;
-    }else{
-        vacancy2.disabled=true;
-        vacancy2.required=false;
-        vacancy2.value="";
-        
-
-        fees2.disabled=true;
-        fees2.required=false;
-        fees2.value="";
-    }
-   })
-
-   three_sharing.addEventListener("change",()=>{
-    if (three_sharing.checked){
-        vacancy3.disabled=false;
-        vacancy3.required=true;
-        
-
-        fees3.disabled=false;
-        fees3.required=true;
-    }else{
-        vacancy3.disabled=true;
-        vacancy3.required=false;
-        vacancy3.value="";
-        
-
-        fees3.disabled=true;
-        fees3.required=false;
-        fees3.value="";
-    }
-   })
-
-   four_sharing.addEventListener("change",()=>{
-    if (four_sharing.checked){
-        vacancy4.disabled=false;
-        vacancy4.required=true;
-        
-
-        fees4.disabled=false;
-        fees4.required=true;
-    }else{
-        vacancy4.disabled=true;
-        vacancy4.required=false;
-        vacancy4.value="";
-        
-
-        fees4.disabled=true;
-        fees4.required=false;
-        fees4.value="";
-    }
-   })
-
-   other_sharing.addEventListener("change",()=>{
-    if (other_sharing.checked){
-        vacancy.disabled=false;
-        vacancy.required=true;
-        
-
-        fees.disabled=false;
-        fees.required=true;
-    }else{
-        vacancy.disabled=true;
-        vacancy.required=false;
-        vacancy.value="";
-        
-
-        fees.disabled=true;
-        fees.required=false;
-        fees.value="";
-    }
-   })
-   
-   document.getElementById('myform').addEventListener('submit',(event)=>{
-    if(!(two_sharing.checked || three_sharing.checked|| four_sharing.checked || other_sharing.checked)){
-        event.preventDefault();
-        alert("please select any one of the sharing option.")
+    function clearSharingDetails(sharingType) {
+        const data = sharingData[sharingType];
+        if (data) {
+            // Clear specific sharing details
+            const anyChecked = Array.from(sharingCheckboxes).some(cb => cb.checked);
+            sharingDetails.classList.toggle('show', anyChecked);
+        }
     }
 
-   })
-   
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        const submitBtn = form.querySelector('.btn-submit');
+        const originalText = submitBtn.innerHTML;
+        
+        // Validate at least one sharing option is selected
+        const anySharingSelected = Array.from(sharingCheckboxes).some(cb => cb.checked);
+        if (!anySharingSelected) {
+            e.preventDefault();
+            alert('Please select at least one sharing option.');
+            return;
+        }
+        
+        // Show loading state
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+        submitBtn.disabled = true;
+        
+        // Reset button after 5 seconds (in case of slow response)
+        setTimeout(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 5000);
+    });
 
+    // File upload enhancement
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const label = this.nextElementSibling;
+            const fileCount = this.files.length;
+            
+            if (fileCount > 0) {
+                label.querySelector('.file-upload-title').textContent = `${fileCount} new file(s) selected`;
+                label.querySelector('.file-upload-subtitle').textContent = 'Click to change selection';
+                label.style.background = 'rgba(76, 175, 80, 0.1)';
+                label.style.borderColor = 'rgba(76, 175, 80, 0.5)';
+            }
+        });
+    });
+
+    // Add floating labels effect
+    const formControls = document.querySelectorAll('.form-control');
+    formControls.forEach(control => {
+        control.addEventListener('focus', function() {
+            this.parentElement.querySelector('.form-label').style.color = 'var(--accent-color)';
+        });
+        
+        control.addEventListener('blur', function() {
+            this.parentElement.querySelector('.form-label').style.color = '';
+        });
+    });
+
+    // Image preview hover effects
+    const imageCards = document.querySelectorAll('.image-preview-card');
+    imageCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            const img = this.querySelector('img');
+            if (img) {
+                img.style.transform = 'scale(1.1)';
+            }
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            const img = this.querySelector('img');
+            if (img) {
+                img.style.transform = 'scale(1)';
+            }
+        });
+    });
+
+    // Add click animation to action buttons
+    const actionButtons = document.querySelectorAll('.image-action-btn');
+    actionButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            if (this.classList.contains('delete')) {
+                // Add shake animation for delete button
+                this.style.animation = 'shake 0.5s ease';
+                setTimeout(() => {
+                    this.style.animation = '';
+                }, 500);
+            } else {
+                // Add pulse animation for view button
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 200);
+            }
+        });
+    });
+
+    // Add CSS animation keyframes
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Initialize sharing details visibility
+    const anyChecked = Array.from(sharingCheckboxes).some(cb => cb.checked);
+    sharingDetails.classList.toggle('show', anyChecked);
+});
 </script>
- {% endblock extra_js %}
+{% endblock extra_js %}
 
 
 

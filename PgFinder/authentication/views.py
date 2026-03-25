@@ -29,7 +29,7 @@ def signin(request):
         if pw1==pw2:
             print(pw1,pw2)
             if User.objects.filter(username=user_name).exists():
-                context['error']="user name alreadu Existed"
+                context['error']="user name already Existed"
             else:
                 User.objects.create_user(username=user_name,password=pw1,email=em)
                 return redirect('login')
