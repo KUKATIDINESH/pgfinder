@@ -140,7 +140,7 @@ EMAIL_USE_TLS = True
 EMAIL_TIMEOUT = 30  # Add timeout to prevent hanging
 
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER',"kukatidinesh69@gmail.com")
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD',"")
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD',"gdjloxuuhunnvonp")
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
