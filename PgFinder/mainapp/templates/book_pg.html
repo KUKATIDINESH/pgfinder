@@ -1,0 +1,509 @@
+{% extends 'base.html' %}
+{% block title %}Book {{ pg.pgname }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .booking-wrap {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  .booking-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .booking-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+
+  .booking-header .pg-name {
+    color: var(--accent);
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  .booking-form {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-group label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+    font-size: 0.9rem;
+  }
+
+  .form-group .form-control {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--text);
+    font-size: 1rem;
+    transition: all 0.2s;
+  }
+
+  .form-group .form-control:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255, 78, 26, 0.1);
+  }
+
+  #id_sharing_type {
+    display: none;
+  }
+
+  .pg-summary {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .pg-summary h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .summary-row:last-child {
+    border-bottom: none;
+    padding-top: 1rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  .btn-submit {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+  }
+
+  .btn-submit:hover {
+    background: #ff4500;
+    transform: translateY(-1px);
+  }
+
+  .error-message {
+    background: rgba(255, 60, 110, 0.1);
+    border: 1px solid rgba(255, 60, 110, 0.25);
+    color: var(--red);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+  }
+
+  .sharing-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .sharing-option {
+    padding: 1rem;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--card-bg);
+  }
+
+  .sharing-option:hover {
+    border-color: var(--accent);
+    background: rgba(255, 78, 26, 0.05);
+    transform: translateY(-2px);
+  }
+
+  .sharing-option.selected {
+    border-color: var(--accent);
+    background: rgba(255, 78, 26, 0.1);
+    box-shadow: 0 4px 12px rgba(255, 78, 26, 0.15);
+  }
+
+  .sharing-option.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--border);
+  }
+
+  .sharing-option div:first-child {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+
+  .sharing-price {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 0.25rem;
+  }
+
+  .sharing-vacancy {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .price-highlight {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  /* Success modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    transform: scale(0.8);
+    transition: transform 0.3s ease;
+  }
+
+  .modal-overlay.show .modal {
+    transform: scale(1);
+  }
+
+  .modal-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 1rem;
+    background: rgba(40, 167, 69, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #28a745;
+    font-size: 1.5rem;
+  }
+
+  .modal h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+
+  .modal p {
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+
+  .modal-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .modal-btn:hover {
+    background: #ff4500;
+    transform: translateY(-1px);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="booking-wrap">
+  <div class="booking-header">
+    <h1>Book Your PG</h1>
+    <div class="pg-name">{{ pg.pgname }}</div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="error-message">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="pg-summary">
+    <h3><i class="fas fa-info-circle"></i> PG Details</h3>
+    <div class="summary-row">
+      <span>PG Name</span>
+      <span>{{ pg.pgname }}</span>
+    </div>
+    <div class="summary-row">
+      <span>Location</span>
+      <span>{{ pg.area }}</span>
+    </div>
+    <div class="summary-row">
+      <span>Address</span>
+      <span>{{ pg.address }}</span>
+    </div>
+    <div class="summary-row">
+      <span>Owner</span>
+      <span>{{ pg.ownername }}</span>
+    </div>
+    <div class="summary-row">
+      <span>Contact</span>
+      <span>{{ pg.phno }}</span>
+    </div>
+  </div>
+
+  <form method="POST" class="booking-form" id="bookingForm">
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label for="{{ form.sharing_type.id_for_label }}">Select Sharing Type</label>
+      <div class="sharing-options" id="sharingOptions">
+        {% if pg.two_sharing and pg.vacancy2 > 0 %}
+        <div class="sharing-option" data-sharing="double" data-fee="{{ pg.fees2 }}" data-vacancy="{{ pg.vacancy2 }}">
+          <div>2 Sharing</div>
+          <div class="sharing-price">₹{{ pg.fees2 }}/month</div>
+          <div class="sharing-vacancy">{{ pg.vacancy2 }} seats available</div>
+        </div>
+        {% endif %}
+        
+        {% if pg.three_sharing and pg.vacancy3 > 0 %}
+        <div class="sharing-option" data-sharing="triple" data-fee="{{ pg.fees3 }}" data-vacancy="{{ pg.vacancy3 }}">
+          <div>3 Sharing</div>
+          <div class="sharing-price">₹{{ pg.fees3 }}/month</div>
+          <div class="sharing-vacancy">{{ pg.vacancy3 }} seats available</div>
+        </div>
+        {% endif %}
+        
+        {% if pg.four_sharing and pg.vacancy4 > 0 %}
+        <div class="sharing-option" data-sharing="four" data-fee="{{ pg.fees4 }}" data-vacancy="{{ pg.vacancy4 }}">
+          <div>4 Sharing</div>
+          <div class="sharing-price">₹{{ pg.fees4 }}/month</div>
+          <div class="sharing-vacancy">{{ pg.vacancy4 }} seats available</div>
+        </div>
+        {% endif %}
+        
+        {% if pg.other_sharing and pg.vacancy > 0 %}
+        <div class="sharing-option" data-sharing="single" data-fee="{{ pg.fees }}" data-vacancy="{{ pg.vacancy }}">
+          <div>Single Sharing</div>
+          <div class="sharing-price">₹{{ pg.fees }}/month</div>
+          <div class="sharing-vacancy">{{ pg.vacancy }} seats available</div>
+        </div>
+        {% endif %}
+      </div>
+      {% if not pg.has_available_sharing %}
+        <div class="error-message">All seats are booked for this PG.</div>
+      {% endif %}
+      {{ form.sharing_type }}
+      {% if form.sharing_type.errors %}
+        <div class="error-message">{{ form.sharing_type.errors }}</div>
+      {% endif %}
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="{{ form.start_date.id_for_label }}">Start Date</label>
+        {{ form.start_date }}
+        {% if form.start_date.errors %}
+          <div class="error-message">{{ form.start_date.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.end_date.id_for_label }}">End Date</label>
+        {{ form.end_date }}
+        {% if form.end_date.errors %}
+          <div class="error-message">{{ form.end_date.errors }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="{{ form.contact_number.id_for_label }}">Contact Number</label>
+      {{ form.contact_number }}
+      {% if form.contact_number.errors %}
+        <div class="error-message">{{ form.contact_number.errors }}</div>
+      {% endif %}
+    </div>
+
+    <div class="form-group">
+      <label for="{{ form.message.id_for_label }}">Message (Optional)</label>
+      {{ form.message }}
+      {% if form.message.errors %}
+        <div class="error-message">{{ form.message.errors }}</div>
+      {% endif %}
+    </div>
+
+    <button type="submit" class="btn-submit" id="submitBtn" {% if not pg.has_available_sharing %}disabled{% endif %}>
+      <i class="fas fa-calendar-check"></i> Submit Booking Request
+    </button>
+  </form>
+
+  <div style="text-align: center;">
+    <a href="{% url 'pgdetails' pg.id %}" class="btn-pill ghost">
+      <i class="fas fa-arrow-left"></i> Back to PG Details
+    </a>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal-overlay" id="successModal">
+  <div class="modal">
+    <div class="modal-icon">
+      <i class="fas fa-check"></i>
+    </div>
+    <h3>Booking Successful!</h3>
+    <p>Your booking for {{ pg.pgname }} has been submitted successfully.</p>
+    <button class="modal-btn" onclick="closeModal()">Got it!</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Handle sharing option selection
+  const sharingOptions = document.querySelectorAll('.sharing-option');
+  const sharingInput = document.getElementById('{{ form.sharing_type.id_for_label }}');
+  const submitBtn = document.getElementById('submitBtn');
+  
+  sharingOptions.forEach(option => {
+    option.addEventListener('click', function() {
+      // Remove selected class from all options
+      sharingOptions.forEach(opt => opt.classList.remove('selected'));
+      
+      // Add selected class to clicked option
+      this.classList.add('selected');
+      
+      // Set the hidden input value
+      sharingInput.value = this.dataset.sharing;
+      
+      // Update submit button text
+      submitBtn.innerHTML = `<i class="fas fa-calendar-check"></i> Book ${this.dataset.sharing.charAt(0).toUpperCase() + this.dataset.sharing.slice(1)} Sharing - ₹${this.dataset.fee}`;
+    });
+  });
+  
+  // Set minimum date to today
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('{{ form.start_date.id_for_label }}').setAttribute('min', today);
+  document.getElementById('{{ form.end_date.id_for_label }}').setAttribute('min', today);
+
+  // Update end date minimum when start date changes
+  document.getElementById('{{ form.start_date.id_for_label }}').addEventListener('change', function() {
+    document.getElementById('{{ form.end_date.id_for_label }}').setAttribute('min', this.value);
+  });
+
+  // Handle form submission with AJAX to show success modal
+  document.getElementById('bookingForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    document.querySelectorAll('.dynamic-error').forEach(error => error.remove());
+
+    if (!sharingInput.value) {
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error-message dynamic-error';
+      errorDiv.textContent = 'Please select an available sharing option.';
+      this.insertBefore(errorDiv, this.firstChild);
+      return;
+    }
+    
+    const formData = new FormData(this);
+    
+    fetch(this.action, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showModal();
+        // Optionally redirect after delay
+        setTimeout(() => {
+          window.location.href = '{% url "my_bookings" %}';
+        }, 3000);
+      } else {
+        // Show error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message dynamic-error';
+        errorDiv.textContent = data.error || 'Booking failed. Please try again.';
+        this.insertBefore(errorDiv, this.firstChild);
+      }
+    })
+    .catch(error => {
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error-message dynamic-error';
+      errorDiv.textContent = 'Booking failed. Please try again.';
+      this.insertBefore(errorDiv, this.firstChild);
+      console.error('Error:', error);
+    });
+  });
+
+  function showModal() {
+    document.getElementById('successModal').classList.add('show');
+  }
+
+  function closeModal() {
+    document.getElementById('successModal').classList.remove('show');
+  }
+</script>
+{% endblock %}

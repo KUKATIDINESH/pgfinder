@@ -14,8 +14,10 @@
   <ul class="nav-links">
     <li><a href="{% url 'home' %}"><i class="fas fa-home fa-xs me-1"></i>Home</a></li>
     <li class="nav-cta"><a href="{% url 'pgregister' %}"><i class="fas fa-plus fa-xs me-1"></i>List PG</a></li>
-    <li><a href="{% url 'pglist_for_modification' %}"><i class="fas fa-pen fa-xs me-1"></i>My PGs</a></li>
     {% if user.is_authenticated %}
+      <li><a href="{% url 'my_bookings' %}"><i class="fas fa-calendar-check fa-xs me-1"></i>My Bookings</a></li>
+      <li><a href="{% url 'manage_bookings' %}"><i class="fas fa-tasks fa-xs me-1"></i>Manage Bookings</a></li>
+      <li><a href="{% url 'pglist_for_modification' %}"><i class="fas fa-pen fa-xs me-1"></i>My PGs</a></li>
       <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt fa-xs me-1"></i>Logout</a></li>
     {% else %}
       <li><a href="{% url 'login' %}"><i class="fas fa-sign-in-alt fa-xs me-1"></i>Login</a></li>

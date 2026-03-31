@@ -1,0 +1,346 @@
+{% extends 'base.html' %}
+{% block title %}My Bookings{% endblock %}
+
+{% block extra_css %}
+<style>
+  .bookings-wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+
+  .page-header p {
+    color: var(--muted);
+    font-size: 1rem;
+  }
+
+  .booking-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.2s;
+  }
+
+  .booking-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(255, 78, 26, 0.1);
+  }
+
+  .booking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .booking-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .booking-status {
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .status-pending {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.25);
+  }
+
+  .status-confirmed {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.25);
+  }
+
+  .status-cancelled {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.25);
+  }
+
+  .status-completed {
+    background: rgba(108, 117, 125, 0.1);
+    color: #6c757d;
+    border: 1px solid rgba(108, 117, 125, 0.25);
+  }
+
+  .booking-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .detail-item {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .detail-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 0.25rem;
+  }
+
+  .detail-value {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .booking-message {
+    background: var(--card-bg);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    font-style: italic;
+    color: var(--muted);
+  }
+
+  .booking-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .cancel-form {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--card-bg);
+    display: none;
+  }
+
+  .cancel-form.show {
+    display: block;
+  }
+
+  .cancel-form textarea {
+    width: 100%;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--panel);
+    color: var(--text);
+    resize: vertical;
+  }
+
+  .cancel-reason {
+    background: rgba(220, 53, 69, 0.08);
+    border: 1px solid rgba(220, 53, 69, 0.18);
+    padding: 1rem;
+    border-radius: 10px;
+    margin-top: 1rem;
+    color: var(--muted);
+  }
+
+  .btn-action {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+
+  .btn-action:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .btn-action.primary {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .btn-action.primary:hover {
+    background: #ff4500;
+  }
+
+  .btn-action.cancel {
+    background: #dc3545;
+    color: white;
+    border-color: #dc3545;
+  }
+
+  .btn-action.cancel:hover {
+    background: #c82333;
+    color: white;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--muted);
+  }
+
+  .empty-state i {
+    font-size: 3rem;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+
+  .empty-state h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+
+  .price-highlight {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bookings-wrap">
+  <div class="page-header">
+    <h1><i class="fas fa-calendar-check"></i> My Bookings</h1>
+    <p>Track and manage your PG booking requests</p>
+  </div>
+
+  {% if bookings %}
+    {% for booking in bookings %}
+      <div class="booking-card">
+        <div class="booking-header">
+          <div>
+            <div class="booking-title">{{ booking.pg.pgname }}</div>
+            <div style="color: var(--muted); font-size: 0.9rem; margin-top: 0.25rem;">
+              <i class="fas fa-location-dot"></i> {{ booking.pg.area }}
+            </div>
+          </div>
+          <div class="booking-status status-{{ booking.status }}">
+            {{ booking.status }}
+          </div>
+        </div>
+
+        <div class="booking-details">
+          <div class="detail-item">
+            <div class="detail-label">Sharing Type</div>
+            <div class="detail-value">{{ booking.get_sharing_type_display }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Monthly Rent</div>
+            <div class="detail-value price-highlight">₹{{ booking.fees }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Duration</div>
+            <div class="detail-value">{{ booking.start_date }} to {{ booking.end_date }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Contact</div>
+            <div class="detail-value">{{ booking.contact_number }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Booked On</div>
+            <div class="detail-value">{{ booking.booking_date|date:"M d, Y" }}</div>
+          </div>
+        </div>
+
+        {% if booking.message %}
+          <div class="booking-message">
+            <strong>Message:</strong> {{ booking.message }}
+          </div>
+        {% endif %}
+
+        {% if booking.cancellation_reason %}
+          <div class="cancel-reason">
+            <strong>Cancellation Reason:</strong> {{ booking.cancellation_reason }}
+          </div>
+        {% endif %}
+
+        <div class="booking-actions">
+          <a href="{% url 'pgdetails' booking.pg.id %}" class="btn-action">
+            <i class="fas fa-eye"></i> View PG Details
+          </a>
+
+          {% if booking.status == 'confirmed' or booking.status == 'pending' %}
+            <button type="button" class="btn-action cancel" onclick="toggleCancelForm('{{ booking.id }}')">
+              <i class="fas fa-ban"></i> Cancel Booking
+            </button>
+          {% endif %}
+          
+          {% if booking.status == 'confirmed' and not booking.bookingreview %}
+            <a href="{% url 'add_booking_review' booking.id %}" class="btn-action primary">
+              <i class="fas fa-star"></i> Add Review
+            </a>
+          {% endif %}
+          
+          {% if booking.bookingreview %}
+            <div style="padding: 0.5rem 1rem; background: var(--card-bg); border-radius: 8px; font-size: 0.9rem;">
+              <i class="fas fa-star" style="color: gold;"></i> 
+              Rated: {{ booking.bookingreview.rating }}/5 
+              {% if booking.bookingreview.review_text %}- "{{ booking.bookingreview.review_text|truncatewords:10 }}"{% endif %}
+            </div>
+          {% endif %}
+        </div>
+
+        {% if booking.status == 'confirmed' or booking.status == 'pending' %}
+          <form method="POST" action="{% url 'cancel_booking' booking.id %}" class="cancel-form" id="cancel-form-{{ booking.id }}">
+            {% csrf_token %}
+            <label for="cancel-reason-{{ booking.id }}" class="detail-label">Reason for cancellation</label>
+            <textarea id="cancel-reason-{{ booking.id }}" name="cancellation_reason" minlength="5" required placeholder="Please tell us why you want to cancel this booking"></textarea>
+            <button type="submit" class="btn-action cancel">Submit Cancellation</button>
+          </form>
+        {% endif %}
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <i class="fas fa-calendar-times"></i>
+      <h3>No Bookings Yet</h3>
+      <p>You haven't made any PG bookings yet. Start exploring PGs and book your perfect accommodation!</p>
+      <a href="{% url 'home' %}" class="btn-action primary" style="margin-top: 1rem;">
+        <i class="fas fa-search"></i> Explore PGs
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function toggleCancelForm(bookingId) {
+    const form = document.getElementById(`cancel-form-${bookingId}`);
+    if (form) {
+      form.classList.toggle('show');
+    }
+  }
+</script>
+{% endblock %}

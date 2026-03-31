@@ -1,0 +1,292 @@
+{% extends 'base.html' %}
+{% block title %}Review {{ booking.pg.pgname }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .review-wrap {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  .review-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .review-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+
+  .review-header .pg-name {
+    color: var(--accent);
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  .booking-summary {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .booking-summary h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .summary-row:last-child {
+    border-bottom: none;
+  }
+
+  .review-form {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+    font-size: 0.9rem;
+    display: block;
+  }
+
+  .form-group .form-control {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--text);
+    font-size: 1rem;
+    transition: all 0.2s;
+    width: 100%;
+  }
+
+  .form-group .form-control:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255, 78, 26, 0.1);
+  }
+
+  .rating-stars {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .rating-stars label {
+    cursor: pointer;
+    color: var(--border);
+    transition: all 0.2s;
+  }
+
+  .rating-stars label:hover,
+  .rating-stars input:checked ~ label {
+    color: gold;
+  }
+
+  .rating-stars input {
+    display: none;
+  }
+
+  .btn-submit {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+  }
+
+  .btn-submit:hover {
+    background: #ff4500;
+    transform: translateY(-1px);
+  }
+
+  .error-message {
+    background: rgba(255, 60, 110, 0.1);
+    border: 1px solid rgba(255, 60, 110, 0.25);
+    color: var(--red);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+  }
+
+  .success-message {
+    background: rgba(40, 167, 69, 0.1);
+    border: 1px solid rgba(40, 167, 69, 0.25);
+    color: #28a745;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+  }
+
+  .rating-display {
+    font-size: 1.2rem;
+    color: gold;
+    margin-bottom: 0.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="review-wrap">
+  <div class="review-header">
+    <h1><i class="fas fa-star"></i> Rate Your Experience</h1>
+    <div class="pg-name">{{ booking.pg.pgname }}</div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="success-message">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="booking-summary">
+    <h3><i class="fas fa-info-circle"></i> Booking Details</h3>
+    <div class="summary-row">
+      <span>PG Name</span>
+      <span>{{ booking.pg.pgname }}</span>
+    </div>
+    <div class="summary-row">
+      <span>Location</span>
+      <span>{{ booking.pg.area }}</span>
+    </div>
+    <div class="summary-row">
+      <span>Sharing Type</span>
+      <span>{{ booking.get_sharing_type_display }}</span>
+    </div>
+    <div class="summary-row">
+      <span>Monthly Rent</span>
+      <span style="color: var(--accent); font-weight: 700;">₹{{ booking.fees }}</span>
+    </div>
+    <div class="summary-row">
+      <span>Duration</span>
+      <span>{{ booking.start_date }} to {{ booking.end_date }}</span>
+    </div>
+  </div>
+
+  <form method="POST" class="review-form">
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label for="{{ form.rating.id_for_label }}">Rating</label>
+      <div class="rating-stars">
+        <input type="radio" id="star5" name="rating" value="5" required>
+        <label for="star5">★</label>
+        <input type="radio" id="star4" name="rating" value="4">
+        <label for="star4">★</label>
+        <input type="radio" id="star3" name="rating" value="3">
+        <label for="star3">★</label>
+        <input type="radio" id="star2" name="rating" value="2">
+        <label for="star2">★</label>
+        <input type="radio" id="star1" name="rating" value="1">
+        <label for="star1">★</label>
+      </div>
+      {{ form.rating }}
+      {% if form.rating.errors %}
+        <div class="error-message">{{ form.rating.errors }}</div>
+      {% endif %}
+    </div>
+
+    <div class="form-group">
+      <label for="{{ form.review_text.id_for_label }}">Your Review (Optional)</label>
+      {{ form.review_text }}
+      {% if form.review_text.errors %}
+        <div class="error-message">{{ form.review_text.errors }}</div>
+      {% endif %}
+      <small style="color: var(--muted); font-size: 0.85rem;">
+        Share your experience with this PG to help others make informed decisions.
+      </small>
+    </div>
+
+    <button type="submit" class="btn-submit">
+      <i class="fas fa-star"></i> Submit Review
+    </button>
+  </form>
+
+  <div style="text-align: center;">
+    <a href="{% url 'my_bookings' %}" class="btn-pill ghost">
+      <i class="fas fa-arrow-left"></i> Back to My Bookings
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Handle star rating display
+  const stars = document.querySelectorAll('.rating-stars input');
+  const labels = document.querySelectorAll('.rating-stars label');
+  
+  stars.forEach((star, index) => {
+    star.addEventListener('change', () => {
+      labels.forEach((label, i) => {
+        if (i >= (5 - star.value)) {
+          label.style.color = 'gold';
+        } else {
+          label.style.color = 'var(--border)';
+        }
+      });
+    });
+  });
+
+  // Handle hover effects
+  labels.forEach((label, index) => {
+    label.addEventListener('mouseenter', () => {
+      labels.forEach((l, i) => {
+        if (i >= index) {
+          l.style.color = 'gold';
+        } else {
+          l.style.color = 'var(--border)';
+        }
+      });
+    });
+  });
+
+  document.querySelector('.rating-stars').addEventListener('mouseleave', () => {
+    const checkedStar = document.querySelector('.rating-stars input:checked');
+    if (checkedStar) {
+      labels.forEach((label, i) => {
+        if (i >= (5 - checkedStar.value)) {
+          label.style.color = 'gold';
+        } else {
+          label.style.color = 'var(--border)';
+        }
+      });
+    } else {
+      labels.forEach(label => {
+        label.style.color = 'var(--border)';
+      });
+    }
+  });
+</script>
+{% endblock %}

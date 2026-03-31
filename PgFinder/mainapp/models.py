@@ -137,7 +137,61 @@ class PGInformation(models.Model):
 
     def __str__(self):
         return self.pgname
+
+    def has_available_sharing(self):
+        return any([
+            self.two_sharing and (self.vacancy2 or 0) > 0,
+            self.three_sharing and (self.vacancy3 or 0) > 0,
+            self.four_sharing and (self.vacancy4 or 0) > 0,
+            self.other_sharing and (self.vacancy or 0) > 0,
+        ])
+
 class PGImage(models.Model):
     image=models.ImageField(upload_to='pg_images/',blank=True,null=True)
     pg=models.ForeignKey(PGInformation,on_delete=models.CASCADE,related_name='images')
+
+# Booking Models
+class Booking(models.Model):
+    SHARING_CHOICES = [
+        ('single', 'Single Sharing'),
+        ('double', '2 Sharing'),
+        ('triple', '3 Sharing'),
+        ('four', '4 Sharing'),
+    ]
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('cancelled', 'Cancelled'),
+        ('completed', 'Completed'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    pg = models.ForeignKey(PGInformation, on_delete=models.CASCADE)
+    sharing_type = models.CharField(max_length=20)  # 'single', 'double', 'triple', 'four'
+    fees = models.IntegerField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    booking_date = models.DateTimeField(auto_now_add=True)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    contact_number = models.CharField(max_length=15)
+    message = models.TextField(blank=True)
+    cancellation_reason = models.TextField(blank=True)
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.pg.pgname} ({self.status})"
+    
+    class Meta:
+        ordering = ['-booking_date']
+
+    def get_sharing_type_display(self):
+        return dict(self.SHARING_CHOICES).get(self.sharing_type, self.sharing_type)
+
+class BookingReview(models.Model):
+    booking = models.OneToOneField(Booking, on_delete=models.CASCADE)
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    review_text = models.TextField(blank=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Review for {self.booking.pg.pgname} by {self.booking.user.username}"
 

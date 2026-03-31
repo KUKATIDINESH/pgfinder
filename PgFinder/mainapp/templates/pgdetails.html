@@ -297,6 +297,36 @@
     </tbody>
   </table>
 
+  <!-- Booking Section -->
+  {% if user.is_authenticated and pg.has_available_sharing %}
+  <div class="booking-section" style="margin-top: 2rem; padding: 1.5rem; background: var(--panel); border-radius: 8px; border: 1px solid var(--border);">
+    <h3 style="color: var(--text); margin-bottom: 1rem; font-family: 'Syne', sans-serif;">
+      <i class="fas fa-calendar-check" style="color: var(--accent);"></i> Ready to Book?
+    </h3>
+    <p style="color: var(--muted); margin-bottom: 1rem;">Book your spot in this PG now!</p>
+    <a href="{% url 'book_pg' pg.id %}" class="btn-pill primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+      <i class="fas fa-book"></i> Book This PG
+    </a>
+  </div>
+  {% elif user.is_authenticated %}
+  <div class="booking-section" style="margin-top: 2rem; padding: 1.5rem; background: var(--panel); border-radius: 8px; border: 1px solid var(--border);">
+    <h3 style="color: var(--text); margin-bottom: 1rem; font-family: 'Syne', sans-serif;">
+      <i class="fas fa-circle-xmark" style="color: #dc3545;"></i> Fully Booked
+    </h3>
+    <p style="color: var(--muted); margin-bottom: 0;">All available seats are booked right now.</p>
+  </div>
+  {% else %}
+  <div class="booking-section" style="margin-top: 2rem; padding: 1.5rem; background: var(--panel); border-radius: 8px; border: 1px solid var(--border);">
+    <h3 style="color: var(--text); margin-bottom: 1rem; font-family: 'Syne', sans-serif;">
+      <i class="fas fa-sign-in-alt" style="color: var(--accent);"></i> Login to Book
+    </h3>
+    <p style="color: var(--muted); margin-bottom: 1rem;">Please login or signup to book this PG.</p>
+    <a href="{% url 'signin' %}" class="btn-pill primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+      <i class="fas fa-sign-in-alt"></i> Login / Signup
+    </a>
+  </div>
+  {% endif %}
+
   <a href="{% url 'home' %}" class="btn-pill ghost"><i class="fas fa-arrow-left"></i>Back to Search</a>
 </div>
 
