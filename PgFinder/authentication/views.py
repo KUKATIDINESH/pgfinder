@@ -57,13 +57,17 @@ def signin(request):
         request.session['email'] = em
 
         # 🔥 Send Email
-        send_mail(
-            'Email Verification',
-            f'Your OTP is: {otp}',
-            settings.EMAIL_HOST_USER,
-            [em],
-            fail_silently=False,
-        )
+        try:
+            send_mail(
+                'Email Verification',
+                f'Your OTP is: {otp}',
+                settings.EMAIL_HOST_USER,
+                [em],
+                fail_silently=False,
+            )
+        except Exception as e:
+            context['error'] = f"Failed to send OTP: {str(e)}"
+            return render(request, 'signup.html', context)
 
         return redirect('verify_otp')
 
