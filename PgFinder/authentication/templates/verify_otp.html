@@ -1,0 +1,556 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OTP Verification</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #020a14;
+      --panel: rgba(0, 220, 255, 0.03);
+      --cyan: #00dcff;
+      --cyan-dim: rgba(0, 220, 255, 0.15);
+      --cyan-glow: rgba(0, 220, 255, 0.4);
+      --green: #00ff9d;
+      --red: #ff3c6e;
+      --text: #c8eaf5;
+      --muted: rgba(200, 234, 245, 0.4);
+      --border: rgba(0, 220, 255, 0.2);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      overflow: hidden;
+    }
+
+    /* ── Animated grid background ── */
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(0,220,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,220,255,.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      animation: gridShift 20s linear infinite;
+    }
+    @keyframes gridShift {
+      from { background-position: 0 0; }
+      to   { background-position: 48px 48px; }
+    }
+
+    /* ── Floating orbs ── */
+    .orb {
+      position: fixed; border-radius: 50%; filter: blur(80px); z-index: 0; pointer-events: none;
+    }
+    .orb-1 { width: 500px; height: 500px; background: rgba(0,220,255,.07); top:-150px; right:-150px; animation: drift1 18s ease-in-out infinite alternate; }
+    .orb-2 { width: 400px; height: 400px; background: rgba(0,255,157,.05); bottom:-120px; left:-120px; animation: drift2 22s ease-in-out infinite alternate; }
+    @keyframes drift1 { from{transform:translate(0,0)} to{transform:translate(-60px,80px)} }
+    @keyframes drift2 { from{transform:translate(0,0)} to{transform:translate(80px,-60px)} }
+
+    /* ── Scan line ── */
+    .scanline {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,.08) 3px, rgba(0,0,0,.08) 4px);
+    }
+
+    /* ── Layout ── */
+    .stage {
+      position: relative; z-index: 2;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+
+    /* ── Card ── */
+    .card {
+      width: 100%; max-width: 440px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 48px 40px 40px;
+      position: relative;
+      backdrop-filter: blur(20px);
+      animation: cardIn .7s cubic-bezier(.16,1,.3,1) both;
+      box-shadow: 0 0 60px rgba(0,220,255,.06), inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    @keyframes cardIn {
+      from { opacity:0; transform: translateY(28px) scale(.97); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
+    }
+
+    /* corner accents */
+    .card::before, .card::after,
+    .card .corner-bl, .card .corner-br {
+      content: ''; position: absolute; width: 14px; height: 14px;
+      border-color: var(--cyan); border-style: solid;
+    }
+    .card::before  { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+    .card::after   { top: -1px; right:-1px; border-width: 2px 2px 0 0; }
+    .card .corner-bl { bottom:-1px; left:-1px; border-width: 0 0 2px 2px; }
+    .card .corner-br { bottom:-1px; right:-1px; border-width: 0 2px 2px 0; }
+
+    /* ── Header ── */
+    .header { text-align: center; margin-bottom: 36px; }
+
+    .icon-ring {
+      width: 72px; height: 72px; margin: 0 auto 20px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+      background: var(--cyan-dim);
+      animation: pulse 3s ease-in-out infinite;
+      box-shadow: 0 0 30px var(--cyan-glow);
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 20px var(--cyan-glow); }
+      50%      { box-shadow: 0 0 50px var(--cyan-glow), 0 0 80px rgba(0,220,255,.15); }
+    }
+    .icon-ring svg { width: 32px; height: 32px; }
+
+    .badge {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px; letter-spacing: 3px; color: var(--cyan);
+      text-transform: uppercase; margin-bottom: 10px;
+      opacity: 0; animation: fadeUp .5s .4s forwards;
+    }
+    .title {
+      font-size: 28px; font-weight: 700; letter-spacing: 2px;
+      color: #fff; line-height: 1.1;
+      opacity: 0; animation: fadeUp .5s .5s forwards;
+    }
+    .subtitle {
+      font-size: 14px; color: var(--muted); margin-top: 8px; font-weight: 400;
+      opacity: 0; animation: fadeUp .5s .6s forwards;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* ── OTP Input group ── */
+    .otp-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px; letter-spacing: 2px; color: var(--cyan);
+      text-transform: uppercase; margin-bottom: 12px; display: block;
+      opacity: 0; animation: fadeUp .5s .7s forwards;
+    }
+
+    .otp-slots {
+      display: flex; gap: 10px; justify-content: center; margin-bottom: 8px;
+      opacity: 0; animation: fadeUp .5s .75s forwards;
+    }
+
+    .otp-slots input {
+      width: 54px; height: 64px;
+      text-align: center;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 26px; font-weight: 700;
+      color: var(--cyan);
+      background: rgba(0,220,255,.05);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      outline: none;
+      caret-color: var(--cyan);
+      transition: border-color .2s, background .2s, box-shadow .2s;
+      /* hide browser number spinners */
+      -moz-appearance: textfield;
+    }
+    .otp-slots input::-webkit-outer-spin-button,
+    .otp-slots input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    .otp-slots input:focus {
+      border-color: var(--cyan);
+      background: rgba(0,220,255,.1);
+      box-shadow: 0 0 0 3px rgba(0,220,255,.1), 0 0 20px rgba(0,220,255,.2);
+    }
+    .otp-slots input.filled {
+      border-color: rgba(0,255,157,.5);
+      background: rgba(0,255,157,.06);
+    }
+
+    /* hidden real input for Django form */
+    #otp-hidden { display: none; }
+
+    /* ── Timer ── */
+    .timer-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 28px; padding: 0 2px;
+      opacity: 0; animation: fadeUp .5s .85s forwards;
+    }
+    .timer {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px; color: var(--muted);
+    }
+    .timer span { color: var(--green); }
+
+    .resend-btn {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 13px; font-weight: 600; letter-spacing: 1px;
+      color: var(--muted); background: none; border: none; cursor: default;
+      text-transform: uppercase; transition: color .2s;
+    }
+    .resend-btn.active { color: var(--cyan); cursor: pointer; }
+    .resend-btn.active:hover { color: #fff; }
+
+    /* ── Submit button ── */
+    .submit-btn {
+      width: 100%; height: 52px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 15px; font-weight: 700; letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--bg);
+      background: var(--cyan);
+      border: none; border-radius: 3px;
+      cursor: pointer;
+      position: relative; overflow: hidden;
+      transition: transform .15s, box-shadow .2s, background .2s;
+      opacity: 0; animation: fadeUp .5s .9s forwards;
+      box-shadow: 0 0 30px var(--cyan-glow);
+    }
+    .submit-btn::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.25) 50%, transparent 100%);
+      transform: translateX(-100%);
+      transition: transform .4s;
+    }
+    .submit-btn:hover::before { transform: translateX(100%); }
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 50px var(--cyan-glow), 0 8px 20px rgba(0,0,0,.4);
+    }
+    .submit-btn:active { transform: translateY(0); }
+
+    /* loading state */
+    .submit-btn.loading {
+      background: rgba(0,220,255,.3);
+      color: transparent;
+      pointer-events: none;
+    }
+    .submit-btn.loading::after {
+      content: ''; position: absolute;
+      width: 22px; height: 22px;
+      top: 50%; left: 50%; translate: -50% -50%;
+      border: 2px solid rgba(0,220,255,.3);
+      border-top-color: var(--cyan);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { rotate: 360deg; } }
+
+    /* ── Error message ── */
+    .error-msg {
+      margin-top: 16px;
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px;
+      border: 1px solid rgba(255,60,110,.25);
+      border-radius: 3px;
+      background: rgba(255,60,110,.06);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px; letter-spacing: 1px;
+      color: var(--red);
+      animation: shake .4s cubic-bezier(.36,.07,.19,.97) both, fadeUp .3s;
+    }
+    @keyframes shake {
+      10%,90%  { transform: translateX(-2px); }
+      20%,80%  { transform: translateX(4px); }
+      30%,50%,70% { transform: translateX(-4px); }
+      40%,60%  { transform: translateX(4px); }
+    }
+
+    /* ── Divider / footer ── */
+    .divider {
+      display: flex; align-items: center; gap: 10px;
+      margin-top: 28px;
+      opacity: 0; animation: fadeUp .5s 1s forwards;
+    }
+    .divider-line { flex:1; height:1px; background: var(--border); }
+    .divider-text {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px; letter-spacing: 2px; color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .back-link {
+      display: block; text-align: center; margin-top: 16px;
+      font-size: 13px; font-weight: 600; letter-spacing: 1px;
+      color: var(--muted); text-decoration: none;
+      text-transform: uppercase;
+      transition: color .2s;
+      opacity: 0; animation: fadeUp .5s 1.05s forwards;
+    }
+    .back-link:hover { color: var(--cyan); }
+
+    /* ── Popup Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.8);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .modal-overlay.show {
+      opacity: 1; visibility: visible;
+    }
+    .modal {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 32px 24px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+    .modal-overlay.show .modal {
+      transform: scale(1);
+    }
+    .modal-icon {
+      width: 60px; height: 60px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      background: rgba(255,60,110,0.1);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--red);
+    }
+    .modal-icon svg { width: 28px; height: 28px; }
+    .modal h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px; font-weight: 700;
+      color: #fff; margin-bottom: 12px;
+    }
+    .modal p {
+      color: var(--muted); font-size: 14px;
+      line-height: 1.5; margin-bottom: 24px;
+    }
+    .modal-btn {
+      padding: 12px 24px;
+      background: var(--red);
+      color: #fff;
+      border: none; border-radius: 4px;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600; font-size: 14px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .modal-btn:hover {
+      background: #ff1f4d; transform: translateY(-1px);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .card { padding: 36px 24px 32px; }
+      .otp-slots input { width: 44px; height: 56px; font-size: 22px; }
+      .title { font-size: 24px; }
+    }
+    @media (max-width: 360px) {
+      .otp-slots { gap: 7px; }
+      .otp-slots input { width: 38px; height: 50px; font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="scanline"></div>
+
+<main class="stage">
+  <div class="card">
+    <div class="corner-bl"></div>
+    <div class="corner-br"></div>
+
+    <div class="header">
+      <div class="icon-ring">
+        <!-- shield/lock icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L4 6v6c0 5.25 3.5 9.74 8 11 4.5-1.26 8-5.75 8-11V6L12 2z"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+      </div>
+      <p class="badge">// security check</p>
+      <h1 class="title">VERIFY IDENTITY</h1>
+      <p class="subtitle">Enter the 6-digit code sent to your device</p>
+    </div>
+
+    <form method="POST" id="otp-form" autocomplete="off">
+      {% csrf_token %}
+
+      <!-- visible OTP slots -->
+      <label class="otp-label">[ access code ]</label>
+      <div class="otp-slots" id="otp-slots">
+        <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" class="slot" autocomplete="off"/>
+        <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" class="slot" autocomplete="off"/>
+        <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" class="slot" autocomplete="off"/>
+        <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" class="slot" autocomplete="off"/>
+        <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" class="slot" autocomplete="off"/>
+        <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" class="slot" autocomplete="off"/>
+      </div>
+
+      <!-- hidden field Django reads -->
+      <input type="hidden" name="otp" id="otp-hidden"/>
+
+      <div class="timer-row">
+        <p class="timer">EXPIRES IN &nbsp;<span id="countdown">02:00</span></p>
+        <p class="timer" id="attempts-display">ATTEMPTS: <span id="attempts">{{ attempts_left|default:3 }}</span>/3</p>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submit-btn">
+        Verify &amp; Proceed
+      </button>
+
+      {% if error %}
+      <div class="error-msg">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ error }}
+      </div>
+      {% endif %}
+    </form>
+
+    <div class="divider">
+      <div class="divider-line"></div>
+      <span class="divider-text">secure channel</span>
+      <div class="divider-line"></div>
+    </div>
+    <a href="#" class="back-link">← Back to Login</a>
+  </div>
+</main>
+
+<!-- OTP Failure Popup Modal -->
+<div class="modal-overlay" id="failureModal">
+  <div class="modal">
+    <div class="modal-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="15" y1="9" x2="9" y2="15"/>
+        <line x1="9" y1="9" x2="15" y2="15"/>
+      </svg>
+    </div>
+    <h3>OTP Verification Failed</h3>
+    <p>Maximum attempts exceeded. The OTP was not valid. Please try registering again with a new OTP.</p>
+    <button class="modal-btn" onclick="redirectToRegister()">Back to Register</button>
+  </div>
+</div>
+
+<script>
+  /* ── OTP Slot Logic ── */
+  const slots  = Array.from(document.querySelectorAll('.slot'));
+  const hidden = document.getElementById('otp-hidden');
+  const form   = document.getElementById('otp-form');
+  const submitBtn = document.getElementById('submit-btn');
+
+  function syncHidden() {
+    hidden.value = slots.map(s => s.value).join('');
+    slots.forEach(s => s.classList.toggle('filled', s.value.length === 1));
+  }
+
+  slots.forEach((slot, i) => {
+    slot.addEventListener('input', e => {
+      const val = slot.value.replace(/\D/g, '');
+      slot.value = val ? val[val.length - 1] : '';
+      syncHidden();
+      if (val && i < slots.length - 1) slots[i + 1].focus();
+    });
+
+    slot.addEventListener('keydown', e => {
+      if (e.key === 'Backspace') {
+        if (!slot.value && i > 0) { slots[i - 1].value = ''; slots[i - 1].focus(); syncHidden(); }
+      }
+      if (e.key === 'ArrowLeft'  && i > 0) slots[i - 1].focus();
+      if (e.key === 'ArrowRight' && i < slots.length - 1) slots[i + 1].focus();
+    });
+
+    slot.addEventListener('paste', e => {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'');
+      text.split('').slice(0, slots.length).forEach((ch, j) => { if (slots[j]) slots[j].value = ch; });
+      syncHidden();
+      const next = Math.min(text.length, slots.length - 1);
+      slots[next].focus();
+    });
+  });
+
+  /* auto-submit when all 6 filled */
+  document.getElementById('otp-slots').addEventListener('input', () => {
+    if (slots.every(s => s.value)) {
+      setTimeout(() => { submitBtn.classList.add('loading'); form.submit(); }, 300);
+    }
+  });
+
+  form.addEventListener('submit', e => {
+    syncHidden();
+    if (hidden.value.length < 6) { e.preventDefault(); slots.find(s => !s.value)?.focus(); return; }
+    submitBtn.classList.add('loading');
+  });
+
+  /* ── Countdown timer ── */
+  let seconds = 120;
+  const cd = document.getElementById('countdown');
+  const resendBtn = document.getElementById('resend-btn');
+
+  const tick = setInterval(() => {
+    seconds--;
+    const m = String(Math.floor(seconds / 60)).padStart(2,'0');
+    const s = String(seconds % 60).padStart(2,'0');
+    cd.textContent = `${m}:${s}`;
+    if (seconds <= 0) {
+      clearInterval(tick);
+      cd.textContent = '00:00';
+      cd.style.color = 'var(--red)';
+      resendBtn.classList.add('active');
+    }
+  }, 1000);
+
+  resendBtn.addEventListener('click', () => {
+    if (!resendBtn.classList.contains('active')) return;
+    seconds = 120;
+    cd.style.color = 'var(--green)';
+    resendBtn.classList.remove('active');
+    // Restart interval
+    const newTick = setInterval(() => {
+      seconds--;
+      const m = String(Math.floor(seconds / 60)).padStart(2,'0');
+      const s = String(seconds % 60).padStart(2,'0');
+      cd.textContent = `${m}:${s}`;
+      if (seconds <= 0) {
+        clearInterval(newTick);
+        cd.textContent = '00:00';
+        cd.style.color = 'var(--red)';
+        resendBtn.classList.add('active');
+      }
+    }, 1000);
+    // Optionally: window.location.href = '/resend-otp/';
+  });
+
+  /* focus first slot on load */
+  slots[0].focus();
+  
+  // Function to show failure modal and redirect
+  function redirectToRegister() {
+    window.location.href = '{% url "signin" %}';
+  }
+</script>
+
+{% if "Maximum attempts exceeded" in error %}
+  <script>
+    document.getElementById('failureModal').classList.add('show');
+  </script>
+{% endif %}
+
+{% if error %}
+  <script>
+    document.getElementById('attempts-display').style.color = 'var(--red)';
+  </script>
+{% endif %}
+
+</body>
+</html>
