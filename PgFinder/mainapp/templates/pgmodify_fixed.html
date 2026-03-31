@@ -214,6 +214,43 @@
   .pg-field input::placeholder { color: #bbb; }
   .pg-field-error { font-size: 12px; color: #c0392b; }
 
+  /* ── FACILITY CHECKBOXES ── */
+  .pg-field input[type="checkbox"].facility-checkbox {
+    width: auto;
+    margin-right: 0.5rem;
+    margin-bottom: 0;
+    transform: scale(1.2);
+    accent-color: var(--accent);
+  }
+
+  .pg-field label.pg-label:has(input[type="checkbox"]) {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.8rem 1rem;
+    background: var(--cream);
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    transition: all 0.2s;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--ink);
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  .pg-field label.pg-label:has(input[type="checkbox"]):hover {
+    border-color: var(--accent);
+    background: rgba(200,96,42,0.05);
+  }
+
+  .pg-field label.pg-label:has(input[type="checkbox"]:checked) {
+    border-color: var(--accent);
+    background: rgba(200,96,42,0.1);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
   /* ── SHARING CHECKBOXES ── */
   .sharing-options {
     display: grid;
@@ -274,6 +311,22 @@
     background: var(--cream);
     border: 1.5px solid var(--line);
     border-radius: var(--radius);
+  }
+
+  /* ── SHARING PANELS ── */
+  .sharing-panel {
+    display: none;
+    margin-top: 16px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .sharing-panel.show {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   /* ── IMAGES ── */
@@ -494,52 +547,19 @@
       </div>
     </div>
 
-    <!-- Facilities -->
-    <div class="pg-card">
-      <div class="pg-card-head">
-        <div class="pg-card-icon icon-amber"><i class="fas fa-star"></i></div>
-        <div>
-          <div class="pg-card-title">Facilities & Amenities</div>
-          <div class="pg-card-sub">Toggle available facilities</div>
-        </div>
-      </div>
-      <div class="pg-card-body">
-        <div class="pg-grid pg-grid-3">
-          <div class="pg-field">
-            <label class="pg-label">
-              <input type="checkbox" name="washing_machine" {% if pg.washing_machine %}checked{% endif %} style="margin-right: 8px;">
-              Washing Machine
-            </label>
-          </div>
-          <div class="pg-field">
-            <label class="pg-label">
-              <input type="checkbox" name="water_heater" {% if pg.water_heater %}checked{% endif %} style="margin-right: 8px;">
-              Water Heater
-            </label>
-          </div>
-          <div class="pg-field">
-            <label class="pg-label">
-              <input type="checkbox" name="ac" {% if pg.ac %}checked{% endif %} style="margin-right: 8px;">
-              Air Conditioning
-            </label>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Sharing Options -->
     <div class="pg-card">
       <div class="pg-card-head">
         <div class="pg-card-icon icon-amber"><i class="fas fa-bed"></i></div>
         <div>
           <div class="pg-card-title">Room & Sharing Options</div>
-          <div class="pg-card-sub">Select sharing types and configure vacancy & rent</div>
+          <div class="pg-card-sub">Select all that apply</div>
         </div>
       </div>
       <div class="pg-card-body">
         <div class="sharing-options">
           <div class="sharing-chip">
-            <input type="checkbox" id="chk2" name="two_sharing" class="sharing-checkbox" data-sharing="2" {% if pg.two_sharing %}checked{% endif %}>
+            <input type="checkbox" id="chk2" name="two_sharing" class="sharing-checkbox" data-panel="panel2" {% if pg.two_sharing %}checked{% endif %}>
             <label for="chk2">
               <span class="chip-icon">🛏️</span>
               <span class="chip-label">2 Sharing</span>
@@ -547,7 +567,7 @@
             </label>
           </div>
           <div class="sharing-chip">
-            <input type="checkbox" id="chk3" name="three_sharing" class="sharing-checkbox" data-sharing="3" {% if pg.three_sharing %}checked{% endif %}>
+            <input type="checkbox" id="chk3" name="three_sharing" class="sharing-checkbox" data-panel="panel3" {% if pg.three_sharing %}checked{% endif %}>
             <label for="chk3">
               <span class="chip-icon">🏠</span>
               <span class="chip-label">3 Sharing</span>
@@ -555,7 +575,7 @@
             </label>
           </div>
           <div class="sharing-chip">
-            <input type="checkbox" id="chk4" name="four_sharing" class="sharing-checkbox" data-sharing="4" {% if pg.four_sharing %}checked{% endif %}>
+            <input type="checkbox" id="chk4" name="four_sharing" class="sharing-checkbox" data-panel="panel4" {% if pg.four_sharing %}checked{% endif %}>
             <label for="chk4">
               <span class="chip-icon">👥</span>
               <span class="chip-label">4 Sharing</span>
@@ -563,7 +583,7 @@
             </label>
           </div>
           <div class="sharing-chip">
-            <input type="checkbox" id="chkOther" name="other_sharing" class="sharing-checkbox" data-sharing="other" {% if pg.other_sharing %}checked{% endif %}>
+            <input type="checkbox" id="chkOther" name="other_sharing" class="sharing-checkbox" data-panel="panelO" {% if pg.other_sharing %}checked{% endif %}>
             <label for="chkOther">
               <span class="chip-icon">✨</span>
               <span class="chip-label">Custom</span>
@@ -572,54 +592,86 @@
           </div>
         </div>
 
-        <!-- Dynamic sharing fields -->
-        <div id="sharingFieldsContainer">
-          <!-- 2 Sharing Fields -->
-          <div class="sharing-fields-row" id="sharingFields2" data-sharing-type="2">
+        <!-- Sharing Details Panels -->
+        <div id="panel2" class="sharing-panel {% if pg.two_sharing %}show{% endif %}">
+          <div class="sharing-fields-row">
             <div class="pg-field">
-              <label class="pg-label">2 Sharing - Vacancy (seats)</label>
-              <input type="number" name="vacancy2" value="{{ pg.vacancy2|default:'' }}" placeholder="e.g. 3" min="0">
+              <label class="pg-label">Vacancy (seats)</label>
+              <input type="number" name="vacancy2" value="{{ pg.vacancy2 }}" placeholder="e.g. 3" min="0">
             </div>
             <div class="pg-field">
-              <label class="pg-label">2 Sharing - Monthly Rent (₹)</label>
-              <input type="number" name="fees2" value="{{ pg.fees2|default:'' }}" placeholder="e.g. 8000" min="0">
-            </div>
-          </div>
-
-          <!-- 3 Sharing Fields -->
-          <div class="sharing-fields-row" id="sharingFields3" data-sharing-type="3">
-            <div class="pg-field">
-              <label class="pg-label">3 Sharing - Vacancy (seats)</label>
-              <input type="number" name="vacancy3" value="{{ pg.vacancy3|default:'' }}" placeholder="e.g. 2" min="0">
-            </div>
-            <div class="pg-field">
-              <label class="pg-label">3 Sharing - Monthly Rent (₹)</label>
-              <input type="number" name="fees3" value="{{ pg.fees3|default:'' }}" placeholder="e.g. 6000" min="0">
+              <label class="pg-label">Monthly Rent (₹)</label>
+              <input type="number" name="fees2" value="{{ pg.fees2 }}" placeholder="e.g. 8000" min="0">
             </div>
           </div>
+        </div>
 
-          <!-- 4 Sharing Fields -->
-          <div class="sharing-fields-row" id="sharingFields4" data-sharing-type="4">
+        <div id="panel3" class="sharing-panel {% if pg.three_sharing %}show{% endif %}">
+          <div class="sharing-fields-row">
             <div class="pg-field">
-              <label class="pg-label">4 Sharing - Vacancy (seats)</label>
-              <input type="number" name="vacancy4" value="{{ pg.vacancy4|default:'' }}" placeholder="e.g. 4" min="0">
+              <label class="pg-label">Vacancy (seats)</label>
+              <input type="number" name="vacancy3" value="{{ pg.vacancy3 }}" placeholder="e.g. 3" min="0">
             </div>
             <div class="pg-field">
-              <label class="pg-label">4 Sharing - Monthly Rent (₹)</label>
-              <input type="number" name="fees4" value="{{ pg.fees4|default:'' }}" placeholder="e.g. 5000" min="0">
+              <label class="pg-label">Monthly Rent (₹)</label>
+              <input type="number" name="fees3" value="{{ pg.fees3 }}" placeholder="e.g. 6500" min="0">
             </div>
           </div>
+        </div>
 
-          <!-- Other Sharing Fields -->
-          <div class="sharing-fields-row" id="sharingFieldsOther" data-sharing-type="other">
+        <div id="panel4" class="sharing-panel {% if pg.four_sharing %}show{% endif %}">
+          <div class="sharing-fields-row">
             <div class="pg-field">
-              <label class="pg-label">Custom Sharing - Vacancy (seats)</label>
-              <input type="number" name="vacancy" value="{{ pg.vacancy|default:'' }}" placeholder="e.g. 1" min="0">
+              <label class="pg-label">Vacancy (seats)</label>
+              <input type="number" name="vacancy4" value="{{ pg.vacancy4 }}" placeholder="e.g. 3" min="0">
             </div>
             <div class="pg-field">
-              <label class="pg-label">Custom Sharing - Monthly Rent (₹)</label>
-              <input type="number" name="fees" value="{{ pg.fees|default:'' }}" placeholder="e.g. 12000" min="0">
+              <label class="pg-label">Monthly Rent (₹)</label>
+              <input type="number" name="fees4" value="{{ pg.fees4 }}" placeholder="e.g. 5000" min="0">
             </div>
+          </div>
+        </div>
+
+        <div id="panelO" class="sharing-panel {% if pg.other_sharing %}show{% endif %}">
+          <div class="sharing-fields-row">
+            <div class="pg-field">
+              <label class="pg-label">Vacancy (seats)</label>
+              <input type="number" name="vacancy" value="{{ pg.vacancy }}" placeholder="e.g. 3" min="0">
+            </div>
+            <div class="pg-field">
+              <label class="pg-label">Monthly Rent (₹)</label>
+              <input type="number" name="fees" value="{{ pg.fees }}" placeholder="e.g. 4000" min="0">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Facilities -->
+    <div class="pg-card">
+      <div class="pg-card-head">
+        <div class="pg-card-icon icon-purple"><i class="fas fa-wifi"></i></div>
+        <div>
+          <div class="pg-card-title">Facilities & Amenities</div>
+          <div class="pg-card-sub">Available facilities in your PG</div>
+        </div>
+      </div>
+      <div class="pg-card-body">
+        <div class="pg-grid">
+          <div class="pg-field">
+            <label for="{{ form.washing_machine.id_for_label }}" class="pg-label">
+              {{ form.washing_machine }} Washing Machine
+            </label>
+          </div>
+          <div class="pg-field">
+            <label for="{{ form.water_heater.id_for_label }}" class="pg-label">
+              {{ form.water_heater }} Water Heater (Geyser)
+            </label>
+          </div>
+          <div class="pg-field">
+            <label for="{{ form.ac.id_for_label }}" class="pg-label">
+              {{ form.ac }} Air Conditioning (AC)
+            </label>
           </div>
         </div>
       </div>
@@ -733,10 +785,24 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-  /* ── Sharing checkbox validation ── */
+  /* ── Sharing checkbox functionality ── */
   const form = document.getElementById('modifyForm');
   const checkboxes = document.querySelectorAll('.sharing-checkbox');
   const saveBtn = document.getElementById('saveBtn');
+
+  // Handle sharing checkbox changes
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const panelId = this.dataset.panel;
+      const panel = document.getElementById(panelId);
+      
+      if (this.checked) {
+        panel.classList.add('show');
+      } else {
+        panel.classList.remove('show');
+      }
+    });
+  });
 
   form.addEventListener('submit', function (e) {
     const anyChecked = Array.from(checkboxes).some(c => c.checked);
@@ -772,28 +838,6 @@ document.addEventListener('DOMContentLoaded', function () {
     uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
     uploadZone.addEventListener('drop', () => uploadZone.classList.remove('drag-over'));
   }
-
-  /* ── Dynamic sharing fields visibility ── */
-  function updateSharingFields() {
-    const sharingCheckboxes = document.querySelectorAll('.sharing-checkbox');
-    
-    sharingCheckboxes.forEach(checkbox => {
-      const sharingType = checkbox.dataset.sharing;
-      const fieldsRow = document.getElementById(`sharingFields${sharingType === 'other' ? 'Other' : sharingType}`);
-      
-      if (fieldsRow) {
-        fieldsRow.style.display = checkbox.checked ? 'block' : 'none';
-      }
-    });
-  }
-
-  // Initialize on page load
-  updateSharingFields();
-
-  // Add event listeners to checkboxes
-  document.querySelectorAll('.sharing-checkbox').forEach(checkbox => {
-    checkbox.addEventListener('change', updateSharingFields);
-  });
 
   /* ── Apply DM Sans to all Django-rendered form fields ── */
   document.querySelectorAll('input, select, textarea').forEach(el => {

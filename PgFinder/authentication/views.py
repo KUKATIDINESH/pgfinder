@@ -16,7 +16,7 @@ def user_login(request):
             print('user')
             login(request,user)
             return redirect('home')
-        context={'error':'Sorry username and password mis match not found'}
+        context={'error':'Sorry username and password do not match'}
     return render(request,'login.html',context)
 def signin(request):
     context={}
@@ -29,12 +29,12 @@ def signin(request):
         if pw1==pw2:
             print(pw1,pw2)
             if User.objects.filter(username=user_name).exists():
-                context['error']="user name already Existed"
+                context['error']="username already exists"
             else:
                 User.objects.create_user(username=user_name,password=pw1,email=em)
                 return redirect('login')
         else:
-            context['error']="password didn't matched"
+            context['error']="password did not match"
 
     return render(request,'signup.html',context)
 def user_logout(request):

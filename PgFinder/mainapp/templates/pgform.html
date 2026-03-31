@@ -155,6 +155,41 @@
     box-shadow: 0 0 0 3px rgba(255,78,26,.1);
   }
 
+  /* facility checkboxes */
+  .field-wrap input[type="checkbox"].facility-checkbox {
+    width: auto;
+    margin-right: 0.5rem;
+    margin-bottom: 0;
+    transform: scale(1.2);
+    accent-color: var(--accent);
+  }
+
+  .field-wrap label:has(input[type="checkbox"]) {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.8rem 1rem;
+    background: var(--paper);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    transition: all 0.2s;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--ink);
+  }
+
+  .field-wrap label:has(input[type="checkbox"]):hover {
+    border-color: var(--accent);
+    background: rgba(255,78,26,.05);
+  }
+
+  .field-wrap label:has(input[type="checkbox"]:checked) {
+    border-color: var(--accent);
+    background: rgba(255,78,26,.1);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
   /* sharing checkboxes */
   .sharing-checkboxes {
     display: flex;
@@ -309,7 +344,7 @@
       </div>
       <div class="field-grid">
         {% for field in form %}
-          {% if field.name != 'pguser' and field.name not in 'two_sharing,three_sharing,four_sharing,other_sharing,vacancy2,vacancy3,vacancy4,vacancy,fees2,fees3,fees4,fees,languageknown1,languageknown2,languageknown3' %}
+          {% if field.name != 'pguser' and field.name not in 'two_sharing,three_sharing,four_sharing,other_sharing,vacancy2,vacancy3,vacancy4,vacancy,fees2,fees3,fees4,fees,languageknown1,languageknown2,languageknown3,washing_machine,water_heater,ac' %}
           <div class="field-wrap">
             <label for="{{ field.id_for_label }}">{{ field.label }}</label>
             {{ field }}
@@ -317,6 +352,31 @@
           </div>
           {% endif %}
         {% endfor %}
+      </div>
+    </div>
+
+    <!-- Facilities -->
+    <div class="form-section-card">
+      <div class="section-head">
+        <div class="section-ico"><i class="fas fa-wifi"></i></div>
+        <h3>Facilities & Amenities</h3>
+      </div>
+      <div class="field-grid">
+        <div class="field-wrap">
+          <label for="{{ form.washing_machine.id_for_label }}">
+            {{ form.washing_machine }} Washing Machine
+          </label>
+        </div>
+        <div class="field-wrap">
+          <label for="{{ form.water_heater.id_for_label }}">
+            {{ form.water_heater }} Water Heater (Geyser)
+          </label>
+        </div>
+        <div class="field-wrap">
+          <label for="{{ form.ac.id_for_label }}">
+            {{ form.ac }} Air Conditioning (AC)
+          </label>
+        </div>
       </div>
     </div>
 

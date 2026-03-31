@@ -10,24 +10,28 @@ class PGInformationForm(forms.ModelForm):
         widgets={
             'two_sharing':forms.CheckboxInput(attrs={'class':'two_sharing'}),
 
-             'vacancy2':forms.NumberInput(attrs={'class':'vacancy2','disabled':'disabled'}),
-             'fees2':forms.NumberInput(attrs={'class':'fees2','disabled':'disabled'}),
+             'vacancy2':forms.NumberInput(attrs={'class':'vacancy2'}),
+             'fees2':forms.NumberInput(attrs={'class':'fees2'}),
              
 
             'three_sharing':forms.CheckboxInput(attrs={'class':'three_sharing'}),
-            'vacancy3':forms.NumberInput(attrs={'class':'vacancy3','disabled':'disabled'}),
-            'fees3':forms.NumberInput(attrs={'class':'fees3','disabled':'disabled'}),
+            'vacancy3':forms.NumberInput(attrs={'class':'vacancy3'}),
+            'fees3':forms.NumberInput(attrs={'class':'fees3'}),
 
 
             'four_sharing':forms.CheckboxInput(attrs={'class':'four_sharing'}),
-            'vacancy4':forms.NumberInput(attrs={'class':'vacancy4','disabled':'disabled'}),
-            'fees4':forms.NumberInput(attrs={'class':'fees4','disabled':'disabled'}),
+            'vacancy4':forms.NumberInput(attrs={'class':'vacancy4'}),
+            'fees4':forms.NumberInput(attrs={'class':'fees4'}),
 
 
             'other_sharing':forms.CheckboxInput(attrs={'class':'other_sharing'}),
-            'vacancy':forms.NumberInput(attrs={'class':'vacancy','disabled':'disabled'}),
-            'fees':forms.NumberInput(attrs={'class':'fees','disabled':'disabled'}),
+            'vacancy':forms.NumberInput(attrs={'class':'vacancy'}),
+            'fees':forms.NumberInput(attrs={'class':'fees'}),
 
+            # Facilities checkboxes
+            'washing_machine':forms.CheckboxInput(attrs={'class':'facility-checkbox'}),
+            'water_heater':forms.CheckboxInput(attrs={'class':'facility-checkbox'}),
+            'ac':forms.CheckboxInput(attrs={'class':'facility-checkbox'}),
 
             # 'password':forms.PasswordInput(),
             'bathroom_type':forms.Select(choices=PGInformation.BATHROOM_CHOICES),

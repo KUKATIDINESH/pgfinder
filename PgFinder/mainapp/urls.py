@@ -8,6 +8,7 @@ urlpatterns=[
     path('pgdetails/<int:pk>',views.pg_details,name='pgdetails'),
     path('modifypg/<int:pk>',views.pg_modify,name='modifypg'),
     path('pglist_for_modification',views.pglist_for_modify,name='pglist_for_modification'),
-    path('pg_delete/<int:pk>', views.pg_delete,name='pg_delete')
+    path('pg_delete/<int:pk>', views.pg_delete,name='pg_delete'),
+    path('delete_image/<int:image_id>', views.delete_image, name='delete_image')
     
 ]
