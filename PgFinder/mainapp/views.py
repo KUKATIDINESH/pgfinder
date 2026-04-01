@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from django.db import transaction
+from django.core.mail import send_mail
+from django.conf import settings
 from datetime import date
 # Create your views here.
 from .models import PGImage,PGInformation,Booking,BookingReview
@@ -27,6 +29,63 @@ def _restore_booking_seat(booking):
     _, vacancy_field, _, current_vacancy, _ = _get_sharing_details(booking.pg, booking.sharing_type)
     setattr(booking.pg, vacancy_field, current_vacancy + 1)
     booking.pg.save(update_fields=[vacancy_field])
+
+
+def _send_booking_email(subject, message, recipient):
+    if not recipient:
+        return
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [recipient],
+            fail_silently=True,
+        )
+    except Exception:
+        pass
+
+
+def _notify_owner_new_booking(booking):
+    owner_email = booking.pg.pguser.email
+    subject = f"New booking request for {booking.pg.pgname}"
+    message = (
+        f"Hello {booking.pg.ownername},\n\n"
+        f"You have received a new booking request for {booking.pg.pgname}.\n"
+        f"User: {booking.user.username}\n"
+        f"Email: {booking.user.email}\n"
+        f"Sharing Type: {booking.get_sharing_type_display()}\n"
+        f"Stay: {booking.start_date} to {booking.end_date}\n\n"
+        f"Please log in to PgFinder and confirm or manage this booking request.\n"
+    )
+    _send_booking_email(subject, message, owner_email)
+
+
+def _notify_owner_booking_cancelled(booking):
+    owner_email = booking.pg.pguser.email
+    subject = f"Booking cancelled for {booking.pg.pgname}"
+    message = (
+        f"Hello {booking.pg.ownername},\n\n"
+        f"The booking for {booking.pg.pgname} has been cancelled by {booking.user.username}.\n"
+        f"Sharing Type: {booking.get_sharing_type_display()}\n"
+        f"Stay: {booking.start_date} to {booking.end_date}\n"
+        f"Reason: {booking.cancellation_reason or 'No reason provided'}\n\n"
+        f"Please log in to PgFinder to review your updated room availability.\n"
+    )
+    _send_booking_email(subject, message, owner_email)
+
+
+def _notify_user_booking_confirmed(booking):
+    subject = f"Your booking is confirmed for {booking.pg.pgname}"
+    message = (
+        f"Hello {booking.user.username},\n\n"
+        f"Your booking for {booking.pg.pgname} has been confirmed by the PG owner.\n"
+        f"Sharing Type: {booking.get_sharing_type_display()}\n"
+        f"Monthly Rent: Rs. {booking.fees}\n"
+        f"Stay: {booking.start_date} to {booking.end_date}\n\n"
+        f"You can log in to PgFinder to view your booking details.\n"
+    )
+    _send_booking_email(subject, message, booking.user.email)
 
 # @login_required(login_url='login')
 def home(request):
@@ -247,13 +306,15 @@ def book_pg(request, pk):
                     booking.user = request.user
                     booking.pg = pg
                     booking.fees = fees
-                    booking.status = 'confirmed'
+                    booking.status = 'pending'
                     booking.save()
 
                     setattr(pg, vacancy_field, current_vacancy - 1)
                     pg.save(update_fields=[vacancy_field])
 
-                success_message = 'Booking completed successfully.'
+                    transaction.on_commit(lambda: _notify_owner_new_booking(booking))
+
+                success_message = 'Booking request submitted successfully. The PG owner will confirm it soon.'
                 messages.success(request, success_message)
                 if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                     return JsonResponse({'success': True, 'message': success_message})
@@ -277,6 +338,10 @@ def my_bookings(request):
 @login_required(login_url='login')
 def manage_bookings(request):
     user_pgs = PGInformation.objects.filter(pguser=request.user)
+    if not user_pgs.exists():
+        messages.warning(request, 'First list your PG, then you can open Manage Bookings.')
+        return redirect(request.META.get('HTTP_REFERER', 'home'))
+
     bookings = Booking.objects.filter(pg__in=user_pgs).order_by('-booking_date')
     context = {
         'bookings': bookings,
@@ -308,9 +373,13 @@ def update_booking_status(request, booking_id, status):
             if status == 'cancelled' and booking.status != 'cancelled':
                 _restore_booking_seat(booking)
 
+            should_notify_user = status == 'confirmed' and booking.status != 'confirmed'
             booking.status = status
             booking.save(update_fields=['status'])
             messages.success(request, f'Booking {status} successfully!')
+
+            if should_notify_user:
+                transaction.on_commit(lambda: _notify_user_booking_confirmed(booking))
 
         return redirect('manage_bookings')
     
@@ -351,6 +420,8 @@ def cancel_booking(request, booking_id):
             booking.status = 'cancelled'
             booking.cancellation_reason = form.cleaned_data['cancellation_reason']
             booking.save(update_fields=['status', 'cancellation_reason'])
+
+            transaction.on_commit(lambda: _notify_owner_booking_cancelled(booking))
 
         messages.success(request, 'Booking cancelled successfully. Your seat has been released.')
         return redirect('my_bookings')

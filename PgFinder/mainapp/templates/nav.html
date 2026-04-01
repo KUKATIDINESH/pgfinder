@@ -1,5 +1,84 @@
 {% load static %}
 <nav class="site-nav">
+  <style>
+    .nav-lock-link {
+      background: none;
+      border: none;
+      font-size: .85rem;
+      font-weight: 500;
+      color: #b0b0c3;
+      text-decoration: none;
+      padding: .45rem .85rem;
+      border-radius: 6px;
+      transition: all .2s;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .nav-lock-link:hover {
+      background: rgba(255,78,26,.12);
+      color: var(--accent);
+    }
+
+    .manage-lock-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 10, 15, 0.72);
+      z-index: 12000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .manage-lock-modal.open {
+      display: flex;
+    }
+
+    .manage-lock-card {
+      width: min(460px, 100%);
+      background:
+        radial-gradient(circle at top, rgba(255, 78, 26, 0.18), transparent 55%),
+        linear-gradient(180deg, #ffffff 0%, #fff7f1 100%);
+      border-radius: 24px;
+      border: 1px solid rgba(255, 78, 26, 0.18);
+      padding: 2rem;
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.24);
+      text-align: center;
+    }
+
+    .manage-lock-icon {
+      width: 78px;
+      height: 78px;
+      margin: 0 auto 1rem;
+      border-radius: 24px;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 78, 26, 0.12);
+      color: var(--accent);
+      font-size: 2rem;
+    }
+
+    .manage-lock-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.35rem;
+      margin-bottom: .5rem;
+    }
+
+    .manage-lock-card p {
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+      line-height: 1.6;
+    }
+
+    .manage-lock-actions {
+      display: flex;
+      justify-content: center;
+      gap: .75rem;
+      flex-wrap: wrap;
+    }
+  </style>
+
   <a class="brand" href="{% url 'home' %}">
     <img src="{% static 'images/logo.jpg' %}" alt="PGKamra Logo">
     <span class="brand-name">PG<span>Kamra</span></span>
@@ -16,7 +95,15 @@
     <li class="nav-cta"><a href="{% url 'pgregister' %}"><i class="fas fa-plus fa-xs me-1"></i>List PG</a></li>
     {% if user.is_authenticated %}
       <li><a href="{% url 'my_bookings' %}"><i class="fas fa-calendar-check fa-xs me-1"></i>My Bookings</a></li>
-      <li><a href="{% url 'manage_bookings' %}"><i class="fas fa-tasks fa-xs me-1"></i>Manage Bookings</a></li>
+      <li>
+        {% if user.pginformation_set.exists %}
+          <a href="{% url 'manage_bookings' %}"><i class="fas fa-tasks fa-xs me-1"></i>Manage Bookings</a>
+        {% else %}
+          <button type="button" class="nav-lock-link" onclick="openManageLockModal()">
+            <i class="fas fa-lock fa-xs me-1"></i>Manage Bookings
+          </button>
+        {% endif %}
+      </li>
       <li><a href="{% url 'pglist_for_modification' %}"><i class="fas fa-pen fa-xs me-1"></i>My PGs</a></li>
       <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt fa-xs me-1"></i>Logout</a></li>
     {% else %}
@@ -25,3 +112,42 @@
     <li><a href="{% url 'aboutus' %}"><i class="fas fa-user fa-xs me-1"></i>About</a></li>
   </ul>
 </nav>
+
+{% if user.is_authenticated and not user.pginformation_set.exists %}
+<div class="manage-lock-modal" id="manageLockModal">
+  <div class="manage-lock-card">
+    <div class="manage-lock-icon">
+      <i class="fas fa-building-circle-exclamation"></i>
+    </div>
+    <h3>List Your PG First</h3>
+    <p>Manage Bookings unlocks after you add at least one PG listing. Once your PG is live, you can open this page and manage incoming booking requests.</p>
+    <div class="manage-lock-actions">
+      <button type="button" class="btn-pill ghost" onclick="closeManageLockModal()">Stay Here</button>
+      <a href="{% url 'pgregister' %}" class="btn-pill primary"><i class="fas fa-plus"></i>List PG Now</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openManageLockModal() {
+    const modal = document.getElementById('manageLockModal');
+    if (modal) {
+      modal.classList.add('open');
+    }
+  }
+
+  function closeManageLockModal() {
+    const modal = document.getElementById('manageLockModal');
+    if (modal) {
+      modal.classList.remove('open');
+    }
+  }
+
+  document.addEventListener('click', function(event) {
+    const modal = document.getElementById('manageLockModal');
+    if (modal && event.target === modal) {
+      closeManageLockModal();
+    }
+  });
+</script>
+{% endif %}
